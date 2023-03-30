@@ -1,7 +1,10 @@
 mod term;
+mod sum;
+
 use crate::term::*;
+use crate::sum::*;
 
 fn main() {
-	let my_number:Box<dyn Term> = Box::new(Number::new(3.0));
-	println!("hi {}", my_number.solve());
+	let my_term:Box<dyn Term> = Box::new(Sum::new(vec![Box::new(Number::new(3.0)), Box::new(Number::new(-1.3)), Box::new(Number::new(33.0))]));
+	println!("{}", my_term.calculate());
 }
