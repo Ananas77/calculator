@@ -1,12 +1,18 @@
 mod term;
 mod variable;
 mod sum;
+mod product;
 
 use crate::term::*;
 use crate::variable::*;
 use crate::sum::*;
+use crate::product::*;
 
 fn main() {
-	let my_term:Box<dyn Term> = Box::new(Sum::new(vec![Box::new(Number::new(3.0)), Box::new(Number::new(-1.3)), Box::new(Variable::new("a"))]));
+	let num_1 = Box::new(Number::new(3.0)) as Box<dyn Term>;
+	let num_2 = Box::new(Number::new(2.0)) as Box<dyn Term>;
+	let var_1 = Box::new(Variable::new("a")) as Box<dyn Term>;
+	let sum_1 = Box::new(Sum::new(vec![num_2, var_1])) as Box<dyn Term>;
+	let my_term:Box<dyn Term> = Box::new(Product::new(vec![num_1, sum_1.copy(), sum_1]));
 	println!("{}", my_term.calculate());
 }

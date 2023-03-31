@@ -5,16 +5,19 @@ pub enum TermType
 {
 	None,
 	Number,
-	Sum,
 	Variable,
+	Sum,
+	Product,
 }
 
 pub trait Term
 {
-	fn calculate(&self) -> Box<dyn Term> {Box::new(Number::new(0.0))} 	// returns the term's exact value
-	fn print(&self) -> String {"0".to_string()}                   		// prints the term
-	fn get_value(&self) -> f32 {0.0} 									// returns an exact value as a float if possible
-	fn get_type(&self) -> TermType {TermType::None}
+	fn calculate(&self) -> Box<dyn Term> {panic!("Trying to calculate empty term")}	// returns the term's exact value
+	fn print(&self) -> String {panic!("Trying to get value of an empty term")}	// prints the term
+	fn get_value(&self) -> f32 {panic!("Trying to get value of an empty term")}	// returns an exact value as a float if possible
+	fn get_type(&self) -> TermType {TermType::None}	// returns the term's type (also see enum TermType)
+	fn get_parts(&self) -> Vec<Box<dyn Term>> {panic!("Trying to get parts of an empty term")}	// returns the summands or factors of a term
+	fn copy(&self) -> Box<dyn Term> {panic!("Trying to copy an empty Term")}	// returns a term with the same values
 }
 
 impl fmt::Display for dyn Term
@@ -50,6 +53,10 @@ impl Term for Number
 
 	fn get_type(&self) -> TermType {
 		TermType::Number
+	}
+
+	fn copy(&self) -> Box<dyn Term> {
+		Box::new(self.clone())
 	}
 }
 

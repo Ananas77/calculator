@@ -20,6 +20,10 @@ impl Term for Variable
     fn get_type(&self) -> TermType {
 		TermType::Variable
 	}
+
+    fn copy(&self) -> Box<dyn Term> {
+        Box::new(Variable::new(&self.name))
+    }
 }
 
 impl Variable
