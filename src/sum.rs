@@ -9,9 +9,10 @@ impl Term for Sum
 {
 	fn calculate(&self) -> Box<dyn Term> {
 		// calculate result
-		let result:Box<dyn Term>;
-		let mut new_summands:Vec<Box<dyn Term>> = vec![];
-		let mut number_result = Number::new(0.0);
+		let result:Box<dyn Term>;	// this will later be returned
+		let mut new_summands:Vec<Box<dyn Term>> = vec![];	// the summands that remain from the original sum
+		let mut number_result = Number::new(0.0);	// any numbers get added directly to this value
+		// go through each summand and try to add it to the rest
 		for term in &self.summands
 		{
 			let calculated_term = term.calculate();
@@ -33,17 +34,43 @@ impl Term for Sum
 			0 => result = Box::new(Number::new(0.0)),
 			_ => result = Box::new(Sum::new(new_summands)),
 		}
+
+		// return
 		result
 	}
 
 	fn print(&self) -> String {
 		if self.summands.len() != 0
 		{
-			let mut result = format!("{}", self.summands[0].print());
-			for summand in &self.summands[1..]
+			let mut result = "".to_string();
+			let mut i = 0; // index for the following for loop
+			
+			// add each factor to the result string
+			for summand in &self.summands
 			{
-				result = format!("{} + {}", result, summand.print());
+				if i != 0
+				{
+					result = format!("{} + ", result);
+				}
+				i += 1;
+				match summand.get_type()
+				{
+					// Negative numbers require parentheses
+					TermType::Number => {
+						if summand.get_value() < 0.0
+						{
+							result = format!("{}({})", result, summand.print())
+						}
+						else 
+						{
+							result = format!("{}{}", result, summand.print())
+						}
+					}
+					_ => result = format!("{}{}", result, summand.print())
+				}
 			}
+
+			// return
 			result
 		}
 		else 

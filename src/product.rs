@@ -10,10 +10,11 @@ impl Term for Product
 {
 	fn calculate(&self) -> Box<dyn Term> {
 		// calculate result
-		let mut result:Box<dyn Term>;
-		let mut new_factors:Vec<Box<dyn Term>> = vec![];
-		let mut number_result = Number::new(1.0);
-		let mut i = 0;
+		let mut result:Box<dyn Term>; // this will later be returned
+		let mut new_factors:Vec<Box<dyn Term>> = vec![];	// the factors that remain from the original product
+		let mut number_result = Number::new(1.0);	// any numbers get multiplied directly with this value
+		let mut i = 0;	// index used for the following for loop
+		// goes through every factor and tries to calculate anything that can be calculated
 		for term in &self.factors
 		{
 			let calculated_term = term.calculate();
@@ -24,11 +25,14 @@ impl Term for Product
 			};
 			i += 1;
 		};
+
+		// add the number result to the new factors
 		if number_result.get_value() != 1.0
 		{
 			new_factors.push(Box::new(number_result));
 		};
 
+		// format the new factors
 		match new_factors.len()
 		{
 			1 => result = (&new_factors[0]).copy(),
@@ -44,6 +48,7 @@ impl Term for Product
 			},
 		}
 
+		// check for sums and multiply their summands with the remaining product
 		i = 0;
 		for term in &new_factors
 		{
@@ -68,44 +73,53 @@ impl Term for Product
 					}
 					summands.push(Box::new(Product::new(factors)));
 				}
+		// calculate the resulting sum
 				result = Sum::new(summands).calculate();
 				break;
 			}
 			i+=1;
 		};
+
+		// return
 		result
 	}
 
 	fn print(&self) -> String {
-		let mut result = "".to_string();
-		let mut i = 0;
+		let mut result = "".to_string(); // this will later be returned
+		let mut i = 0; // index for the following for loop
+		
+		// add each factor to result string
 		for factor in &self.factors
 		{
 			if i != 0
 			{
-				result = format!("{} *", result);
+				result = format!("{} * ", result);
 			}
 			i += 1;
 			match factor.get_type()
 			{
-				TermType::Sum => result = format!("{} ({})", result, factor.print()),
+				// Sums and negative numbers require parenthesis
+				TermType::Sum => result = format!("{}({})", result, factor.print()),
 				TermType::Number => {
 					if factor.get_value() < 0.0
 					{
-						result = format!("{} ({})", result, factor.print())
+						result = format!("{}({})", result, factor.print())
 					}
 					else 
 					{
-						result = format!("{} {}", result, factor.print())
+						result = format!("{}{}", result, factor.print())
 					}
 				}
-				_ => result = format!("{} {}", result, factor.print())
+				_ => result = format!("{}{}", result, factor.print())
 			}
 		}
+
+		// return
 		result
 	}
 
-	fn get_parts(&self) -> Vec<Box<dyn Term>> {
+	fn get_parts(&self) -> Vec<Box<dyn Term>> // returns the product's factors
+	{
 		let mut result = vec![];
 		for factor in &self.factors
 		{

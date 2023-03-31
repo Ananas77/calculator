@@ -13,14 +13,14 @@ pub enum TermType
 pub trait Term
 {
 	fn calculate(&self) -> Box<dyn Term> {panic!("Trying to calculate empty term")}	// returns the term's exact value
-	fn print(&self) -> String {panic!("Trying to get value of an empty term")}	// prints the term
+	fn print(&self) -> String {panic!("Trying to get value of an empty term")}	// returns the term as string
 	fn get_value(&self) -> f32 {panic!("Trying to get value of an empty term")}	// returns an exact value as a float if possible
 	fn get_type(&self) -> TermType {TermType::None}	// returns the term's type (also see enum TermType)
 	fn get_parts(&self) -> Vec<Box<dyn Term>> {panic!("Trying to get parts of an empty term")}	// returns the summands or factors of a term
-	fn copy(&self) -> Box<dyn Term> {panic!("Trying to copy an empty Term")}	// returns a term with the same values
+	fn copy(&self) -> Box<dyn Term> {panic!("Trying to copy an empty Term")}	// returns a term with the same values (alternative to implementing the 'Copy' trait, which is not possible)
 }
 
-impl fmt::Display for dyn Term
+impl fmt::Display for dyn Term // for printing terms
 {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "{}", self.print())
