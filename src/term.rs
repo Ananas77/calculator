@@ -6,6 +6,7 @@ pub enum TermType
 	None,
 	Number,
 	Sum,
+	Variable,
 }
 
 pub trait Term
@@ -16,12 +17,14 @@ pub trait Term
 	fn get_type(&self) -> TermType {TermType::None}
 }
 
-impl fmt::Display for dyn Term {
+impl fmt::Display for dyn Term
+{
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "{}", self.print())
 	}
 }
 
+#[derive(Clone, Copy)]
 pub struct Number
 {
 	value:f32
