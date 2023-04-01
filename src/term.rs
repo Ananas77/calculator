@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Copy)]
 pub enum TermType
 {
 	None,

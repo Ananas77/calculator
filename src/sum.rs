@@ -39,6 +39,7 @@ impl Term for Sum
 				TermType::Number => number_result = Number::new(number_result.get_value() + term.get_value()),
 				TermType::Sum => new_summands.extend(term.get_parts()),
 				TermType::Product => products.push(term),
+				TermType::Variable => products.push(Box::new(Product::new(vec![term]))), // variables are treated as 1 * var and later get added to the other products
 				_ => new_summands.push(term)
 			}
 		};
