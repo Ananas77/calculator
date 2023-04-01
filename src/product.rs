@@ -13,6 +13,7 @@ impl Term for Product
 		let mut result:Box<dyn Term>; // this will later be returned
 		let mut new_factors:Vec<Box<dyn Term>> = vec![];	// the factors that remain from the original product
 		let mut number_result = Number::new(1.0);	// any numbers get multiplied directly with this value
+		let mut variables: Vec<Box<dyn Term>> = vec![];	// variables get in here to be calculated and sorted later
 		let mut i = 0;	// index used for the following for loop
 		// goes through every factor and tries to calculate anything that can be calculated
 		for term in &self.factors
@@ -21,6 +22,8 @@ impl Term for Product
 			match calculated_term.get_type()
 			{
 				TermType::Number => number_result = Number::new(number_result.get_value() * calculated_term.get_value()),
+				TermType::Variable => variables.push(calculated_term),
+				TermType::Product => new_factors.extend(calculated_term.get_parts()),
 				_ => new_factors.push(calculated_term)
 			};
 			i += 1;
@@ -31,6 +34,11 @@ impl Term for Product
 		{
 			new_factors.push(Box::new(number_result));
 		};
+
+		// sort the variables
+		variables.sort_by(|a, b| a.print().to_lowercase().cmp(&b.print().to_lowercase()));
+		// add the variables to the new factors
+		new_factors.extend(variables);
 
 		// format the new factors
 		match new_factors.len()
@@ -91,7 +99,7 @@ impl Term for Product
 		// add each factor to result string
 		for factor in &self.factors
 		{
-			if i != 0
+			if i != 0 && factor.get_type() != TermType::Variable && factor.get_type() != TermType::Sum
 			{
 				result = format!("{} * ", result);
 			}
@@ -138,7 +146,7 @@ impl Term for Product
 		{
 			factor_copy.push(factor.copy());
 		}
-		Box::new(Sum::new(factor_copy))
+		Box::new(Product::new(factor_copy))
 	}
 }
 
