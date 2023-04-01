@@ -1,7 +1,16 @@
 mod term;
-use crate::term::*;
+mod variable;
+mod sum;
+mod product;
+mod input;
+
+use std::io;
+
+use crate::input::*;
 
 fn main() {
-	let my_number:Box<dyn Term> = Box::new(Number::new(3.0));
-	println!("hi {}", my_number.solve());
+	let mut input: String = String::new();
+	io::stdin().read_line(&mut input).expect("Failed to read input");
+	let term = term_from_string(input);
+	println!("{} = {}", term, term.calculate());
 }
