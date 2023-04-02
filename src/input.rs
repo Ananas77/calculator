@@ -1,4 +1,4 @@
-use crate::{term::{Term, Number, TermType}, sum::Sum, product::Product, variable::Variable};
+use crate::{term::*, sum::Sum, product::Product, variable::Variable, fraction::Fraction};
 
 pub fn term_from_string(input: String) -> Box<dyn Term>
 {
@@ -7,12 +7,13 @@ pub fn term_from_string(input: String) -> Box<dyn Term>
     let mut interpret_next_as: TermType = TermType::None;
     for part in parts
     {
-        if let Ok(i) = part.parse::<f32>()
+        if let Ok(i) = part.parse::<f64>()
         {
             match interpret_next_as
             {
                 TermType::Sum => result = Box::new(Sum::new(vec![result, Box::new(Number::new(i))])),
                 TermType::Product => result = Box::new(Product::new(vec![result, Box::new(Number::new(i))])),
+                TermType::Fraction => result = Box::new(Fraction::new(result, Box::new(Number::new(i)))),
                 _ => result = Box::new(Number::new(i))
             }
             interpret_next_as = TermType::None;
@@ -28,10 +29,16 @@ pub fn term_from_string(input: String) -> Box<dyn Term>
             interpret_next_as = TermType::Product;
             continue;
         }
+        if part == "/"
+        {
+            interpret_next_as = TermType::Fraction;
+            continue;
+        }
         match interpret_next_as
         {
             TermType::Sum => result = Box::new(Sum::new(vec![result, Box::new(Variable::new(&part))])),
             TermType::Product => result = Box::new(Product::new(vec![result, Box::new(Variable::new(&part))])),
+            TermType::Fraction => result = Box::new(Fraction::new(result, Box::new(Variable::new(&part)))),
             _ => result = Box::new(Variable::new(&part))
         }
     }
