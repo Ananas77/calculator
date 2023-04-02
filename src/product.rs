@@ -1,3 +1,6 @@
+use std::vec;
+
+use crate::fraction::Fraction;
 use crate::term::*;
 use crate::sum::*;
 
@@ -11,20 +14,37 @@ impl Term for Product
 	fn calculate(&self) -> Box<dyn Term> {
 		// calculate result
 		let mut result:Box<dyn Term>; // this will later be returned
+		let mut calculated_factors: Vec<Box<dyn Term>> = vec![];
 		let mut new_factors:Vec<Box<dyn Term>> = vec![];	// the factors that remain from the original product
 		let mut number_result = Number::new(1.0);	// any numbers get multiplied directly with this value
 		let mut variables: Vec<Box<dyn Term>> = vec![];	// variables get in here to be calculated and sorted later
+		let mut fractions: Vec<Box<dyn Term>> = vec![];	// fractions get in here to be calculated later
 		let mut i = 0;	// index used for the following for loop
-		// goes through every factor and tries to calculate anything that can be calculated
+		
+		// calculate factors
 		for term in &self.factors
 		{
 			let calculated_term = term.calculate();
-			match calculated_term.get_type()
+			if TermType::Product == calculated_term.get_type()
 			{
-				TermType::Number => number_result = Number::new(number_result.get_value() * calculated_term.get_value()),
-				TermType::Variable => variables.push(calculated_term),
-				TermType::Product => new_factors.extend(calculated_term.get_parts()),
-				_ => new_factors.push(calculated_term)
+				calculated_factors.extend(calculated_term.get_parts());
+			}
+			else
+			{
+				calculated_factors.push(calculated_term);
+			}
+		}
+
+		// goes through every factor and tries to calculate anything that can be calculated
+		for term in &calculated_factors
+		{
+			match term.get_type()
+			{
+				TermType::Number => number_result = Number::new(number_result.get_value() * term.get_value()),
+				TermType::Variable => variables.push(term.copy()),
+				TermType::Product => new_factors.extend(term.get_parts()),
+				TermType::Fraction => fractions.push(term.copy()),
+				_ => new_factors.push(term.copy())
 			};
 			i += 1;
 		};
@@ -87,6 +107,22 @@ impl Term for Product
 			}
 			i+=1;
 		};
+
+		// calculate fractions
+		if fractions.len() > 0
+		{
+			let mut numerators = vec![];
+			let mut denominators = vec![];
+			// calculate fractions
+			for fraction in fractions
+			{
+				let parts = fraction.get_parts();
+				numerators.push(parts[0].copy());
+				denominators.push(parts[1].copy());
+			}
+			numerators.push(result);
+			result = Fraction::new(Box::new(Product::new(numerators)), Box::new(Product::new(denominators))).calculate();
+		}
 
 		// return
 		result

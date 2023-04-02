@@ -14,7 +14,6 @@ impl Term for Fraction
         let result: Box<dyn Term>;  // will later be returned
         let prime_factors_numerator = prime_factors(self.numerator.calculate()).get_parts();    // get numerator and denominator into products, reduce the fraction
         let prime_factors_denominator = prime_factors(self.denominator.calculate()).get_parts();
-        let mut reduced_factors: Vec<Box<dyn Term>> = vec![];   // all factors the fraction should be reduced by get in here
         let mut new_factors_numerator: Vec<Box<dyn Term>> = vec![]; // what is left from the numerator after reducing
         let mut new_factors_denominator: Vec<Box<dyn Term>> = vec![];   // what is left from the denominator after reducing
         // go through each prime factor in the numerator and check wether the fraction can be reduced by it
@@ -36,11 +35,7 @@ impl Term for Fraction
                 }
                 i += 1;
             }
-            if reduced_by_factor
-            {
-                reduced_factors.push(factor_numerator.copy());
-            }
-            else {
+            if !reduced_by_factor {
                 new_factors_numerator.push(factor_numerator.copy());
             }
         }
@@ -79,6 +74,14 @@ impl Term for Fraction
     fn get_type(&self) -> TermType
     {
         TermType::Fraction
+    }
+
+    fn get_parts(&self) -> Vec<Box<dyn Term>> {
+        vec![self.numerator.copy(), self.denominator.copy()]
+    }
+
+    fn copy(&self) -> Box<dyn Term> {
+        Box::new(Fraction::new(self.numerator.copy(), self.denominator.copy()))
     }
 }
 
