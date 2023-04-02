@@ -11,7 +11,7 @@ pub struct Product
 
 impl Term for Product
 {
-	fn calculate(&self) -> Box<dyn Term> {
+	fn calculate(&self, rounded: bool) -> Box<dyn Term> {
 		// calculate result
 		let mut result:Box<dyn Term>; // this will later be returned
 		let mut calculated_factors: Vec<Box<dyn Term>> = vec![];
@@ -24,7 +24,7 @@ impl Term for Product
 		// calculate factors
 		for term in &self.factors
 		{
-			let calculated_term = term.calculate();
+			let calculated_term = term.calculate(rounded);
 			if TermType::Product == calculated_term.get_type()
 			{
 				calculated_factors.extend(calculated_term.get_parts());
@@ -107,7 +107,7 @@ impl Term for Product
 					summands.push(Box::new(Product::new(factors)));
 				}
 		// calculate the resulting sum
-				result = Sum::new(summands).calculate();
+				result = Sum::new(summands).calculate(rounded);
 				break;
 			}
 			i+=1;
@@ -126,7 +126,7 @@ impl Term for Product
 				denominators.push(parts[1].copy());
 			}
 			numerators.push(result);
-			result = Fraction::new(Box::new(Product::new(numerators)), Box::new(Product::new(denominators))).calculate();
+			result = Fraction::new(Box::new(Product::new(numerators)), Box::new(Product::new(denominators))).calculate(rounded);
 		}
 
 		// return

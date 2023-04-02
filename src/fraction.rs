@@ -1,4 +1,4 @@
-use std::vec;
+use std::{vec};
 
 use crate::{term::*, math::prime_factors, product::Product};
 
@@ -10,15 +10,15 @@ pub struct Fraction
 
 impl Term for Fraction
 {
-    fn calculate(&self) -> Box<dyn Term> {
+    fn calculate(&self, rounded: bool) -> Box<dyn Term> {
         let result: Box<dyn Term>;  // will later be returned
         // calculate numerator and denominator
-        let mut calculated_numerator = self.numerator.calculate();
-        let mut calculated_denominator = self.denominator.calculate();
+        let mut calculated_numerator = self.numerator.calculate(rounded);
+        let mut calculated_denominator = self.denominator.calculate(rounded);
         match calculated_numerator.get_type()
         {
             TermType::Fraction => {
-                calculated_denominator = Product::new(vec![calculated_numerator.get_parts()[1].copy(), calculated_denominator]).calculate();
+                calculated_denominator = Product::new(vec![calculated_numerator.get_parts()[1].copy(), calculated_denominator]).calculate(rounded);
                 calculated_numerator = calculated_numerator.get_parts()[0].copy()
             }
             _ => {}
@@ -26,12 +26,11 @@ impl Term for Fraction
         match calculated_denominator.get_type()
         {
             TermType::Fraction => {
-                calculated_numerator = Product::new(vec![calculated_denominator.get_parts()[1].copy(), calculated_numerator]).calculate();
+                calculated_numerator = Product::new(vec![calculated_denominator.get_parts()[1].copy(), calculated_numerator]).calculate(rounded);
                 calculated_denominator = calculated_denominator.get_parts()[0].copy()
             }
             _ => {}
         }
-
         // reduce the fraction
         let prime_factors_numerator = prime_factors(calculated_numerator).get_parts();    // get numerator and denominator into products, reduce the fraction
         let prime_factors_denominator = prime_factors(calculated_denominator).get_parts();
@@ -62,16 +61,54 @@ impl Term for Fraction
         }
 
         // calculate the resulting fraction
-        let new_numerator = Product::new(new_factors_numerator).calculate();
+        let new_numerator = Product::new(new_factors_numerator).calculate(rounded);
         result = match new_factors_denominator.len()
         {
             0 => new_numerator,    // check wether the result is a fraction
             _ =>
             {
-                let new_denominator = Product::new(new_factors_denominator).calculate();
-                Box::new(Fraction::new(new_numerator, new_denominator))
+                let new_denominator = Product::new(new_factors_denominator).calculate(rounded);
+                if rounded
+                {
+                    let numerator_factors = prime_factors(new_numerator.copy()).get_parts();
+                    let denominator_factors = prime_factors(new_denominator.copy()).get_parts();
+                    let mut new_numerator_factors = vec![];
+                    let mut new_denominator_factors = vec![];
+                    let mut numerator_number = 1.0;
+                    let mut denominator_number = 1.0;
+                    // get all numbers from the numerator and denominator
+                    for factor in &numerator_factors
+                    {
+                        match factor.get_type()
+                        {
+                            TermType::Number => {
+                                numerator_number *= factor.get_value();
+                            },
+                            _ => {
+                                new_numerator_factors.push(factor.copy());
+                            }
+                        }
+                    };
+                    for factor in &denominator_factors
+                    {
+                        match factor.get_type()
+                        {
+                            TermType::Number => {
+                                denominator_number *= factor.get_value();
+                            },
+                            _ => {
+                                new_denominator_factors.push(factor.copy());
+                            }
+                        }
+                    };
+                    Product::new(vec![Box::new(Number::new(numerator_number / denominator_number)), Box::new(Fraction::new(Box::new(Product::new(new_numerator_factors)), Box::new(Product::new(new_denominator_factors))))]).calculate(rounded)
+                }
+                else {
+                    Box::new(Fraction::new(new_numerator, new_denominator))
+                }
             }
         };
+
         result
     }
 

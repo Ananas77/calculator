@@ -15,7 +15,7 @@ pub enum TermType
 
 pub trait Term
 {
-	fn calculate(&self) -> Box<dyn Term> {panic!("Trying to calculate empty term")}	// returns the term's exact value
+	fn calculate(&self, _: bool) -> Box<dyn Term> {panic!("Trying to calculate empty term")}	// returns the term's exact value
 	fn print(&self) -> String {panic!("Trying to get value of an empty term")}	// returns the term as string
 	fn get_value(&self) -> f64 {panic!("Trying to get value of an empty term")}	// returns an exact value as a float if possible
 	fn get_type(&self) -> TermType {TermType::None}	// returns the term's type (also see enum TermType)
@@ -39,14 +39,14 @@ pub struct Number
 impl Term for Number
 {
 	// returns value
-	fn calculate(&self) -> Box<dyn Term>
+	fn calculate(&self, rounded: bool) -> Box<dyn Term>
 	{
-		if self.value.round() == self.value
+		if self.value.round() == self.value || rounded
 		{
 			Box::new(Number{value:self.value})
 		}
 		else {
-			Fraction::new(Box::new(Number::new((self.value * 1000000.0).round())), Box::new(Number::new(1000000.0))).calculate()
+			Fraction::new(Box::new(Number::new((self.value * 1000000.0).round())), Box::new(Number::new(1000000.0))).calculate(rounded)
 		}
 	}
 

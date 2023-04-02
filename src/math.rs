@@ -53,7 +53,7 @@ pub fn least_common_multiple(input: Vec<Box<dyn Term>>) -> Box<dyn Term>
 		}
 	}
 
-    Product::new(factors).calculate()
+    Product::new(factors).calculate(false)
 }
 
 fn num_prime_factors(n: i64) -> Vec<Box<dyn Term>>

@@ -9,7 +9,7 @@ pub struct Sum
 
 impl Term for Sum
 {
-	fn calculate(&self) -> Box<dyn Term> {
+	fn calculate(&self, rounded: bool) -> Box<dyn Term> {
 		// calculate result
 		let mut result:Box<dyn Term>;	// this will later be returned
 		let mut calculated_summands: Vec<Box<dyn Term>> = vec![];
@@ -21,7 +21,7 @@ impl Term for Sum
 		// calculate summands
 		for term in &self.summands
 		{
-			let calculated_term = term.calculate();
+			let calculated_term = term.calculate(rounded);
 			if TermType::Sum == calculated_term.get_type()
 			{
 				calculated_summands.extend(calculated_term.get_parts());
@@ -98,7 +98,7 @@ impl Term for Sum
 			else {
 				factors.insert(0, Box::new(Number::new(quantity + other_quantity)));	// add the number factors, multiply the result with the non-number factors
 				new_products.remove(i);	// remove the old element
-				new_products.push(Product::new(factors).calculate());	// add the new one
+				new_products.push(Product::new(factors).calculate(rounded));	// add the new one
 			}
 		}
 		// add the new products to the summands
@@ -145,12 +145,12 @@ impl Term for Sum
 				}
 				let mut new_numerator = vec![fraction.get_parts()[0].copy()];
 				new_numerator.extend(factors_to_extend);
-				new_numerators.push(Product::new(new_numerator).calculate());
+				new_numerators.push(Product::new(new_numerator).calculate(rounded));
 			}
 			let mut new_numerator: Vec<Box<dyn Term>> = least_common_multiple_factors.iter().map(|factor| factor.copy()).collect();
 			new_numerator.push(result.copy());
 			new_numerators.push(Box::new(Product::new(new_numerator)));
-			result = Fraction::new(Box::new(Sum::new(new_numerators)), Box::new(Product::new(least_common_multiple_factors))).calculate()
+			result = Fraction::new(Box::new(Sum::new(new_numerators)), Box::new(Product::new(least_common_multiple_factors))).calculate(rounded)
 		}
 
 		// return

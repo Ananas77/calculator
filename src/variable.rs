@@ -7,7 +7,7 @@ pub struct Variable
 
 impl Term for Variable
 {
-    fn calculate(&self) -> Box<dyn Term>
+    fn calculate(&self, _: bool) -> Box<dyn Term>
     {
         Box::new(Variable::new(&self.name))
     }
