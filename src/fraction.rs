@@ -12,8 +12,29 @@ impl Term for Fraction
 {
     fn calculate(&self) -> Box<dyn Term> {
         let result: Box<dyn Term>;  // will later be returned
-        let prime_factors_numerator = prime_factors(self.numerator.calculate()).get_parts();    // get numerator and denominator into products, reduce the fraction
-        let prime_factors_denominator = prime_factors(self.denominator.calculate()).get_parts();
+        // calculate numerator and denominator
+        let mut calculated_numerator = self.numerator.calculate();
+        let mut calculated_denominator = self.denominator.calculate();
+        match calculated_numerator.get_type()
+        {
+            TermType::Fraction => {
+                calculated_denominator = Product::new(vec![calculated_numerator.get_parts()[1].copy(), calculated_denominator]).calculate();
+                calculated_numerator = calculated_numerator.get_parts()[0].copy()
+            }
+            _ => {}
+        }
+        match calculated_denominator.get_type()
+        {
+            TermType::Fraction => {
+                calculated_numerator = Product::new(vec![calculated_denominator.get_parts()[1].copy(), calculated_numerator]).calculate();
+                calculated_denominator = calculated_denominator.get_parts()[0].copy()
+            }
+            _ => {}
+        }
+
+        // reduce the fraction
+        let prime_factors_numerator = prime_factors(calculated_numerator).get_parts();    // get numerator and denominator into products, reduce the fraction
+        let prime_factors_denominator = prime_factors(calculated_denominator).get_parts();
         let mut new_factors_numerator: Vec<Box<dyn Term>> = vec![]; // what is left from the numerator after reducing
         let mut new_factors_denominator: Vec<Box<dyn Term>> = vec![];   // what is left from the denominator after reducing
         // go through each prime factor in the numerator and check wether the fraction can be reduced by it

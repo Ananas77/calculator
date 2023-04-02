@@ -46,7 +46,7 @@ impl Term for Number
 			Box::new(Number{value:self.value})
 		}
 		else {
-			Fraction::new(Box::new(Number::new(self.value * 1000000.0)), Box::new(Number::new(1000000.0))).calculate()
+			Fraction::new(Box::new(Number::new((self.value * 1000000.0).round())), Box::new(Number::new(1000000.0))).calculate()
 		}
 	}
 

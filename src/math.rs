@@ -25,6 +25,37 @@ pub fn prime_factors(term: Box<dyn Term>) -> Product // assumes, the term is sol
     Product::new(factors)
 }
 
+pub fn least_common_multiple(input: Vec<Box<dyn Term>>) -> Box<dyn Term>
+{
+    let mut factors: Vec<Box<dyn Term>> = vec![];
+    for term in &input
+	{
+		let term_prime_factors = prime_factors(term.copy()).get_parts();
+		let mut factors_copy: Vec<Box<dyn Term>> = factors.iter().map(|factor| factor.copy()).collect();
+		for factor in &term_prime_factors
+		{
+			let mut i = 0;
+			let mut already_in_vec = false;
+			for other_factor in &factors_copy
+			{
+				if factor.print() == other_factor.print()
+				{
+					factors_copy.remove(i);
+					already_in_vec = true;
+					break;
+				}
+				i += 1;
+			}
+			if !already_in_vec
+			{
+				factors.push(factor.copy());
+			}
+		}
+	}
+
+    Product::new(factors).calculate()
+}
+
 fn num_prime_factors(n: i64) -> Vec<Box<dyn Term>>
 {
     let mut factors: Vec<Box<dyn Term>> = Vec::new();

@@ -50,6 +50,11 @@ impl Term for Product
 		};
 
 		// add the number result to the new factors
+		if number_result.get_value() == 0.0
+		{
+			result = Box::new(Number::new(0.0));
+			return result;
+		};
 		if number_result.get_value() != 1.0
 		{
 			new_factors.push(Box::new(number_result));
