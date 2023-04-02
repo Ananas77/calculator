@@ -13,7 +13,6 @@ pub fn prime_factors(term: Box<dyn Term>) -> Product // assumes, the term is sol
         },
         TermType::Sum => {
             let gcd = greatest_common_divisor(term.get_parts());
-            println!("{}", gcd);
             let gcd_as_factors = prime_factors(gcd.copy()).get_parts();
             factors.extend(prime_factors(gcd.copy()).get_parts());
             factors.push(Sum::new(term.get_parts().iter().map(|summand| {
