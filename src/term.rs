@@ -11,6 +11,7 @@ pub enum TermType
 	Sum,
 	Product,
 	Fraction,
+	Power,
 }
 
 pub trait Term
