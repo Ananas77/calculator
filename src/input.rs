@@ -2,7 +2,6 @@ use crate::{term::*, sum::Sum, product::Product, variable::Variable, fraction::F
 
 pub fn term_from_string(input: &str) -> Result<Box<dyn Term>, String>
 {
-    type Err = String;
     let tokens = input.split_whitespace().collect::<Vec<_>>();
     let mut iter = tokens.iter().peekable();
     let term = parse_expr(&mut iter);
