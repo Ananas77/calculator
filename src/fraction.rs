@@ -12,6 +12,7 @@ impl Term for Fraction
 {
 	fn calculate(&self, rounded: bool) -> Box<dyn Term> {
 		let result: Box<dyn Term>;  // will later be returned
+		let mut fraction_is_neg = 1.0;
 		// calculate numerator and denominator
 		let mut calculated_numerator = self.numerator.calculate(rounded);
 		let mut calculated_denominator = self.denominator.calculate(rounded);
@@ -39,7 +40,13 @@ impl Term for Fraction
 		// go through each prime factor in the numerator and check wether the fraction can be reduced by it
 		for factor in &prime_factors_denominator
 		{
-			new_factors_denominator.push(factor.copy());
+			if factor.get_type() == TermType::Number && factor.get_value() < 0.0
+			{
+				fraction_is_neg = -1.0;
+			}
+			else {
+				new_factors_denominator.push(factor.copy());
+			}
 		}
 		for factor_numerator in &prime_factors_numerator
 		{
@@ -56,11 +63,18 @@ impl Term for Fraction
 				i += 1;
 			}
 			if !reduced_by_factor {
-				new_factors_numerator.push(factor_numerator.copy());
+				if factor_numerator.get_type() == TermType::Number && factor_numerator.get_value() < 0.0
+				{
+					fraction_is_neg = -1.0;
+				}
+				else {
+					new_factors_numerator.push(factor_numerator.copy());
+				}
 			}
 		}
 
 		// calculate the resulting fraction
+		new_factors_numerator.insert(0, Box::new(Number::new(fraction_is_neg)));
 		let new_numerator = Product::new(new_factors_numerator).calculate(rounded);
 		result = match new_factors_denominator.len()
 		{

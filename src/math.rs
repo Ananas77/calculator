@@ -111,7 +111,7 @@ fn num_prime_factors(n: i64) -> Vec<Box<dyn Term>>
     let mut factors: Vec<Box<dyn Term>> = Vec::new();
     let mut remainder = n;
 
-    for i in 2..(n+1)
+    for i in 2..(n.abs()+1)
     {
         while remainder % i == 0
         {
@@ -122,6 +122,11 @@ fn num_prime_factors(n: i64) -> Vec<Box<dyn Term>>
         {
             break;
         }
+    }
+
+    if remainder == -1
+    {
+        factors.push(Box::new(Number::new(-1.0)))
     }
 
     factors

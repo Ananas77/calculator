@@ -75,7 +75,7 @@ fn parse_power_part(iter: &mut std::iter::Peekable<std::slice::Iter<&str>>) -> R
         }
         &"-" => {
             let factor = parse_power_part(iter)?;
-            Ok(Box::new(Product::new(vec![Box::new(Number::new(-1.0)), factor])))
+            Ok(Box::new(Product::new(vec![Box::new(Number::new(-1.0)), factor])).calculate(false))
         }
         token => {
             if let Ok(val) = token.parse() {
