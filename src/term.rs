@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, vec};
 
 use crate::fraction::Fraction;
 
@@ -20,7 +20,7 @@ pub trait Term
 	fn print(&self) -> String {panic!("Trying to get value of an empty term")}	// returns the term as string
 	fn get_value(&self) -> f64 {panic!("Trying to get value of an empty term")}	// returns an exact value as a float if possible
 	fn get_type(&self) -> TermType {TermType::None}	// returns the term's type (also see enum TermType)
-	fn get_parts(&self) -> Vec<Box<dyn Term>> {panic!("Trying to get parts of an empty term")}	// returns the summands or factors of a term
+	fn get_parts(&self) -> Vec<Box<dyn Term>> {vec![self.copy()]}	// returns the summands or factors of a term
 	fn copy(&self) -> Box<dyn Term> {panic!("Trying to copy an empty Term")}	// returns a term with the same values (alternative to implementing the 'Copy' trait, which is not possible)
 }
 
@@ -44,10 +44,10 @@ impl Term for Number
 	{
 		if self.value.round() == self.value || rounded
 		{
-			Box::new(Number{value:self.value})
+			Box::new(Number{value:(self.value * 10000000000.0).round() / 10000000000.0})
 		}
 		else {
-			Fraction::new(Box::new(Number::new((self.value * 1000000.0).round())), Box::new(Number::new(1000000.0))).calculate(rounded)
+			Fraction::new(Box::new(Number::new((self.value * 10000000000.0).round())), Box::new(Number::new(10000000000.0))).calculate(rounded)
 		}
 	}
 

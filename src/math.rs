@@ -13,22 +13,7 @@ pub fn prime_factors(term: Box<dyn Term>) -> Product // assumes, the term is sol
         },
         TermType::Sum => {
             // factor out the greatest common divisor
-            let gcd = greatest_common_divisor(term.get_parts());
-            let gcd_as_factors = prime_factors(gcd.copy()).get_parts();
-            factors.extend(prime_factors(gcd.copy()).get_parts());
-            factors.push(Sum::new(term.get_parts().iter().map(|summand| {
-                let mut as_factors = prime_factors(summand.copy()).get_parts();
-                for factor in &gcd_as_factors
-                {
-                    as_factors = as_factors.into_iter()
-                        .enumerate()
-                        .filter(|(_, elem)| elem.print() != factor.print())
-                        .map(|(_, elem)| elem.copy())
-                        .collect();
-                }
-                Product::new(as_factors).calculate(false)
-            }).collect())
-                .calculate(false));
+            factors.extend(factor_out_gcd(term).get_parts());
         },
         TermType::Number => {
             factors.extend(num_prime_factors(term.get_value() as i64));
@@ -36,6 +21,28 @@ pub fn prime_factors(term: Box<dyn Term>) -> Product // assumes, the term is sol
         _ => factors.push(term)
     }
     Product::new(factors)
+}
+
+pub fn factor_out_gcd(term: Box<dyn Term>) -> Box<dyn Term> // works only for sums!!!
+{
+    let gcd = greatest_common_divisor(term.get_parts());
+    let gcd_as_factors = prime_factors(gcd.copy()).get_parts();
+    let mut factors = vec![];
+    factors.extend(gcd_as_factors.iter().map(|factor| factor.copy()));
+    factors.push(Sum::new(term.get_parts().iter().map(|summand| {
+        let mut as_factors = prime_factors(summand.copy()).get_parts();
+        for factor in &gcd_as_factors
+        {
+            as_factors = as_factors.into_iter()
+                .enumerate()
+                .filter(|(_, elem)| elem.print() != factor.print())
+                .map(|(_, elem)| elem.copy())
+                .collect();
+        }
+        Product::new(as_factors).calculate(false)
+    }).collect())
+        .calculate(false));
+    Box::new(Product::new(factors))
 }
 
 pub fn least_common_multiple(input: Vec<Box<dyn Term>>) -> Box<dyn Term>

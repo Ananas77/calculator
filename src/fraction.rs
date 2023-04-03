@@ -101,7 +101,59 @@ impl Term for Fraction
 							}
 						}
 					};
-					Product::new(vec![Box::new(Number::new(numerator_number / denominator_number)), Box::new(Fraction::new(Box::new(Product::new(new_numerator_factors)), Box::new(Product::new(new_denominator_factors))))]).calculate(rounded)
+					let fraction_number = numerator_number / denominator_number;
+					// format
+					if fraction_number != 1.0
+					{
+						if new_numerator_factors.len() > 0
+						{
+							if denominator_factors.len() > 0
+							{
+								Box::new(Product::new(vec![Box::new(Number::new(fraction_number)), Box::new(Fraction::new(Product::new(new_numerator_factors).calculate(rounded), Box::new(Product::new(new_denominator_factors))))]))
+							}
+							else
+							{
+								Box::new(Product::new(vec![Box::new(Number::new(fraction_number)), Product::new(new_numerator_factors).calculate(rounded)]))
+							}
+						}
+						else
+						{
+							if denominator_factors.len() > 0
+							{
+								Box::new(Product::new(vec![Box::new(Number::new(fraction_number)), Box::new(Fraction::new(Box::new(Number::new(1.0)), Box::new(Product::new(new_denominator_factors))))]))
+							}
+							else
+							{
+								Box::new(Number::new(fraction_number))
+							}
+						}
+					}
+					else 
+					{
+						if new_numerator_factors.len() > 0
+						{
+							if denominator_factors.len() > 0
+							{
+								Box::new(Fraction::new(Product::new(new_numerator_factors).calculate(rounded), Box::new(Product::new(new_denominator_factors))))
+							}
+							else
+							{
+								Product::new(new_numerator_factors).calculate(rounded)
+							}
+						}
+						else
+						{
+							if denominator_factors.len() > 0
+							{
+								Box::new(Fraction::new(Box::new(Number::new(1.0)), Box::new(Product::new(new_denominator_factors))))
+							}
+							else
+							{
+								Box::new(Number::new(1.0))
+							}
+						}
+					}
+					
 				}
 				else {
 					Box::new(Fraction::new(new_numerator, new_denominator))
