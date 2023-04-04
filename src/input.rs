@@ -26,6 +26,9 @@ pub fn term_from_string(input: &str) -> Result<Box<dyn Term>, String>
         {
             current_num += &char.to_string();
         }
+        else if char == '.' || char == ',' {
+            current_num += &'.'.to_string();
+        }
         else {
             current_var += &char.to_string();
         }
