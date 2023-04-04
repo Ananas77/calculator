@@ -2,44 +2,31 @@ use crate::{term::*, sum::Sum, product::Product, variable::Variable, fraction::F
 
 pub fn term_from_string(input: &str) -> Result<Box<dyn Term>, String>
 {
-    let chars = input.replace(" ", "").replace("\n", "").chars().collect::<Vec<_>>();
+    let chars = input.replace(" ", "").replace("\n", "").replace("\t", "").chars().collect::<Vec<_>>();
     let mut tokens: Vec<String> = vec![];
-    let mut current_num = "".to_string();
-    let mut current_var = "".to_string();
+    let mut current_input = "".to_string();
     for char in chars
     {
         if char == '+' || char == '-' || char == '*' || char == '/' || char == '^' || char == '(' || char == ')'
         {
-            if current_num != ""
+            if current_input != ""
             {
-                tokens.push(current_num.as_str().to_string());
-                current_num = "".to_string();
-            }
-            if current_var != ""
-            {
-                tokens.push(current_var.as_str().to_string());
-                current_var = "".to_string();
+                tokens.push(current_input.as_str().to_string());
+                current_input = "".to_string();
             }
             tokens.push(char.to_string());
         }
-        else if let Ok(_) = char.to_string().parse::<i8>()
-        {
-            current_num += &char.to_string();
-        }
         else if char == '.' || char == ',' {
-            current_num += &'.'.to_string();
+            current_input += &'.'.to_string();
         }
-        else {
-            current_var += &char.to_string();
+        else
+        {
+            current_input += &char.to_string();
         }
     }
-    if current_num != ""
+    if current_input != ""
     {
-        tokens.push(current_num.as_str().to_string());
-    }
-    if current_var != ""
-    {
-        tokens.push(current_var.as_str().to_string());
+        tokens.push(current_input.as_str().to_string());
     }
     let new_tokens: Vec<&str> = tokens.iter().map(|token| token.as_str()).collect();
     let mut iter = new_tokens.iter().peekable();
