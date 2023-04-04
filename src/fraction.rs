@@ -42,7 +42,7 @@ impl Term for Fraction
 		{
 			if factor.get_type() == TermType::Number && factor.get_value() < 0.0
 			{
-				fraction_is_neg = -1.0;
+				fraction_is_neg *= -1.0;
 			}
 			else {
 				new_factors_denominator.push(factor.copy());
@@ -65,7 +65,7 @@ impl Term for Fraction
 			if !reduced_by_factor {
 				if factor_numerator.get_type() == TermType::Number && factor_numerator.get_value() < 0.0
 				{
-					fraction_is_neg = -1.0;
+					fraction_is_neg *= -1.0;
 				}
 				else {
 					new_factors_numerator.push(factor_numerator.copy());
