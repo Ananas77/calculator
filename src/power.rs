@@ -1,6 +1,6 @@
-use std::vec;
+use std::{vec};
 
-use crate::{term::{Term, TermType, Number}, product::Product, math::factor_out_gcd, fraction::Fraction};
+use crate::{term::{Term, TermType, Number}, product::Product};
 
 pub struct Power
 {
@@ -22,99 +22,24 @@ impl Term for Power
             _ => {}
         }
         
-        result = match calculated_base.get_type() {
+        result = match calculated_exponent.get_type() {
             TermType::Number => {
-                match calculated_exponent.get_type() {
+                match calculated_base.get_type() {
                     TermType::Number => Number::new(calculated_base.get_value().powf(calculated_exponent.get_value())).calculate(round),
-                    TermType::Sum =>  {
-                        let mut factors = vec![];
-                        for summand in &calculated_exponent.get_parts()
-                        {
-                            match summand.get_type() {
-                                TermType::Number => factors.push(Number::new(calculated_base.get_value().powf(summand.get_value())).calculate(round)),
-                                _ => factors.push(Power::new(calculated_base.copy(), summand.copy()).calculate(round))
-                            };
-                        }
-                        match factors.len()
-                        {
-                            1 => factors[0].copy(),
-                            _ => Product::new(factors).calculate(round)
-                        }
-                    },
-                    TermType::Product => {
-                        let mut new_factors = vec![];
-                        for factor in calculated_exponent.get_parts()
-                        {
-                            if factor.get_type() == TermType::Number
-                            {
-                                calculated_base = Number::new(calculated_base.get_value().powf(factor.get_value())).calculate(round);
-                            }
-                            else
-                            {
-                                new_factors.push(factor);
-                            }
-                        };
-                        Box::new(Power::new(calculated_base, Product::new(new_factors).calculate(round)))
-                    },
-                    TermType::Fraction => todo!(),  // root
-                    _ => Box::new(Power::new(calculated_base, calculated_exponent))
-                }
-            },
-            TermType::Sum => {
-                let mut sums = vec![];
-                let mut not_sums = vec![];
-                for factor in factor_out_gcd(calculated_base).get_parts()
-                {
-                    if factor.get_type() != TermType::Sum
+                    TermType::Sum | TermType::Product | TermType::Fraction => if calculated_exponent.get_value().floor() == calculated_exponent.get_value()
                     {
-                        not_sums.push(factor.copy());
+                        Product::new(vec![calculated_base; (calculated_exponent.get_value() as i64).try_into().unwrap()]).calculate(round)
                     }
-                    else {
-                        sums.push(factor.copy());
-                    }
-                };
-                let mut factors = vec![];
-                factors.extend(sums.iter().map(|sum| Box::new(Power::new(sum.copy(), calculated_exponent.copy())) as Box<dyn Term>));   // not calculated to prevent infinite recursion and stack overflow
-                factors.extend(not_sums.iter().map(|sum| Box::new(Power::new(sum.copy(), calculated_exponent.copy())).calculate(round)));
-                Box::new(Product::new(factors))
-            },
-            TermType::Product => {
-                let mut factors = vec![];
-                for factor in calculated_base.get_parts()
-                {
-                    factors.push(Box::new(Power::new(factor.copy(), calculated_exponent.copy())) as Box<dyn Term>);
-                };
-                Product::new(factors).calculate(round)
-            },
-            TermType::Variable => {
-                match calculated_exponent.get_type() {
-                    TermType::Sum =>  {
-                        let mut factors = vec![];
-                        for summand in &calculated_exponent.get_parts()
-                        {
-                            factors.push(Power::new(calculated_base.copy(), summand.copy()).calculate(round))
-                        }
-                        match factors.len()
-                        {
-                            1 => factors[0].copy(),
-                            _ => Product::new(factors).calculate(round)
-                        }
+                    else
+                    {
+                        Box::new(Power::new(calculated_base, calculated_exponent))
                     },
-                    TermType::Product => {
-                        let mut new_factors = vec![];
-                        for factor in calculated_exponent.get_parts()
-                        {
-                            new_factors.push(factor);
-                        };
-                        Box::new(Power::new(calculated_base, Product::new(new_factors).calculate(round)))
-                    },
-                    TermType::Fraction => todo!(),  // root
                     _ => Box::new(Power::new(calculated_base, calculated_exponent))
                 }
             },
             TermType::Fraction => {
-                Fraction::new(Box::new(Power::new(calculated_base.get_parts()[0].copy(), calculated_exponent.copy())), Box::new(Power::new(calculated_base.get_parts()[1].copy(), calculated_exponent.copy()))).calculate(round)
-            },
+                todo!() // root
+            }
             _ => Box::new(Power::new(calculated_base, calculated_exponent))
         };
         result
