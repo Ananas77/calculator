@@ -58,7 +58,7 @@ pub fn least_common_multiple(input: Vec<Box<dyn Term>>) -> Box<dyn Term>
 			let mut already_in_vec = false;
 			for other_factor in &factors_copy
 			{
-				if factor.print() == other_factor.print()
+				if factor == other_factor
 				{
 					factors_copy.remove(i);
 					already_in_vec = true;
@@ -85,12 +85,12 @@ pub fn greatest_common_divisor(input: Vec<Box<dyn Term>>) -> Box<dyn Term>
         all_indiv_factors.extend(vector);
     }
     all_indiv_factors.sort_by(|a, b| a.print().cmp(&b.print()));
-    all_indiv_factors.dedup_by(|a, b| a.print() == b.print());
+    all_indiv_factors.dedup_by(|a, b| a == b);
     let mut result = Vec::new();
     for &factor in &all_indiv_factors {
         let mut min_occurrences = std::usize::MAX;
         for v in &all_factors {
-            let count = v.iter().filter(|&x| x.print() == factor.print()).count();
+            let count = v.iter().filter(|&x| x == factor).count();
             if count < min_occurrences {
                 min_occurrences = count;
             }

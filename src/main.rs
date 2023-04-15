@@ -26,7 +26,7 @@ fn main() {
 		}
 		match term_from_string(&input)
 		{
-			Ok(term) => println!("= {}\n≈ {}", term.calculate(false), term.calculate(true)),
+			Ok(term) => println!("  {}\n= {}\n≈ {}", term, term.calculate(false), term.calculate(true)),
 			Err(e) => println!("Error reading the input: {}", e)
 		}
 	}

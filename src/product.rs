@@ -11,7 +11,7 @@ pub struct Product
 
 impl Term for Product
 {
-	fn calculate(&self, rounded: bool) -> Box<dyn Term> {
+	fn calculate(&self, round: bool) -> Box<dyn Term> {
 		// calculate result
 		let mut result:Box<dyn Term>; // this will later be returned
 		let mut calculated_factors: Vec<Box<dyn Term>> = vec![];
@@ -19,12 +19,11 @@ impl Term for Product
 		let mut number_result = Number::new(1.0);	// any numbers get multiplied directly with this value
 		let mut variables: Vec<Box<dyn Term>> = vec![];	// variables get in here to be calculated and sorted later
 		let mut fractions: Vec<Box<dyn Term>> = vec![];	// fractions get in here to be calculated later
-		let mut i = 0;	// index used for the following for loop
 		
 		// calculate factors
 		for term in &self.factors
 		{
-			let calculated_term = term.calculate(rounded);
+			let calculated_term = term.calculate(round);
 			if TermType::Product == calculated_term.get_type()
 			{
 				calculated_factors.extend(calculated_term.get_parts());
@@ -35,6 +34,7 @@ impl Term for Product
 			}
 		}
 
+		let mut i = 0;
 		// goes through every factor and tries to calculate anything that can be calculated
 		for term in &calculated_factors
 		{
@@ -107,7 +107,7 @@ impl Term for Product
 					summands.push(Box::new(Product::new(factors)));
 				}
 		// calculate the resulting sum
-				result = Sum::new(summands).calculate(rounded);
+				result = Sum::new(summands).calculate(round);
 				break;
 			}
 			i+=1;
@@ -126,7 +126,7 @@ impl Term for Product
 				denominators.push(parts[1].copy());
 			}
 			numerators.push(result);
-			result = Fraction::new(Box::new(Product::new(numerators)), Box::new(Product::new(denominators))).calculate(rounded);
+			result = Fraction::new(Box::new(Product::new(numerators)), Box::new(Product::new(denominators))).calculate(round);
 		}
 
 		// return

@@ -10,16 +10,16 @@ pub struct Fraction
 
 impl Term for Fraction
 {
-	fn calculate(&self, rounded: bool) -> Box<dyn Term> {
+	fn calculate(&self, round: bool) -> Box<dyn Term> {
 		let result: Box<dyn Term>;  // will later be returned
 		let mut fraction_is_neg = 1.0;
 		// calculate numerator and denominator
-		let mut calculated_numerator = self.numerator.calculate(rounded);
-		let mut calculated_denominator = self.denominator.calculate(rounded);
+		let mut calculated_numerator = self.numerator.calculate(round);
+		let mut calculated_denominator = self.denominator.calculate(round);
 		match calculated_numerator.get_type()
 		{
 			TermType::Fraction => {
-				calculated_denominator = Product::new(vec![calculated_numerator.get_parts()[1].copy(), calculated_denominator]).calculate(rounded);
+				calculated_denominator = Product::new(vec![calculated_numerator.get_parts()[1].copy(), calculated_denominator]).calculate(round);
 				calculated_numerator = calculated_numerator.get_parts()[0].copy()
 			}
 			_ => {}
@@ -27,7 +27,7 @@ impl Term for Fraction
 		match calculated_denominator.get_type()
 		{
 			TermType::Fraction => {
-				calculated_numerator = Product::new(vec![calculated_denominator.get_parts()[1].copy(), calculated_numerator]).calculate(rounded);
+				calculated_numerator = Product::new(vec![calculated_denominator.get_parts()[1].copy(), calculated_numerator]).calculate(round);
 				calculated_denominator = calculated_denominator.get_parts()[0].copy()
 			}
 			_ => {}
@@ -54,7 +54,7 @@ impl Term for Fraction
 			let mut i = 0;
 			for factor_denominator in &new_factors_denominator
 			{
-				if factor_numerator.print() == factor_denominator.print()
+				if factor_numerator == factor_denominator
 				{
 					reduced_by_factor = true;
 					new_factors_denominator.remove(i);
@@ -75,14 +75,14 @@ impl Term for Fraction
 
 		// calculate the resulting fraction
 		new_factors_numerator.insert(0, Box::new(Number::new(fraction_is_neg)));
-		let new_numerator = Product::new(new_factors_numerator).calculate(rounded);
+		let new_numerator = Product::new(new_factors_numerator).calculate(round);
 		result = match new_factors_denominator.len()
 		{
 			0 => new_numerator,    // check wether the result is a fraction
 			_ =>
 			{
-				let new_denominator = Product::new(new_factors_denominator).calculate(rounded);
-				if rounded
+				let new_denominator = Product::new(new_factors_denominator).calculate(round);
+				if round
 				{
 					let numerator_factors = prime_factors(new_numerator.copy()).get_parts();
 					let denominator_factors = prime_factors(new_denominator.copy()).get_parts();
@@ -121,18 +121,19 @@ impl Term for Fraction
 					{
 						if new_numerator_factors.len() > 0
 						{
-							if denominator_factors.len() > 0
+							if new_denominator_factors.len() > 0
 							{
-								Box::new(Product::new(vec![Box::new(Number::new(fraction_number)), Box::new(Fraction::new(Product::new(new_numerator_factors).calculate(rounded), Box::new(Product::new(new_denominator_factors))))]))
+								println!("{}",denominator_factors[0]);
+								Box::new(Product::new(vec![Box::new(Number::new(fraction_number)), Box::new(Fraction::new(Product::new(new_numerator_factors).calculate(round), Box::new(Product::new(new_denominator_factors))))]))
 							}
 							else
 							{
-								Box::new(Product::new(vec![Box::new(Number::new(fraction_number)), Product::new(new_numerator_factors).calculate(rounded)]))
+								Box::new(Product::new(vec![Box::new(Number::new(fraction_number)), Product::new(new_numerator_factors).calculate(round)]))
 							}
 						}
 						else
 						{
-							if denominator_factors.len() > 0
+							if new_denominator_factors.len() > 0
 							{
 								Box::new(Product::new(vec![Box::new(Number::new(fraction_number)), Box::new(Fraction::new(Box::new(Number::new(1.0)), Box::new(Product::new(new_denominator_factors))))]))
 							}
@@ -146,18 +147,18 @@ impl Term for Fraction
 					{
 						if new_numerator_factors.len() > 0
 						{
-							if denominator_factors.len() > 0
+							if new_denominator_factors.len() > 0
 							{
-								Box::new(Fraction::new(Product::new(new_numerator_factors).calculate(rounded), Box::new(Product::new(new_denominator_factors))))
+								Box::new(Fraction::new(Product::new(new_numerator_factors).calculate(round), Box::new(Product::new(new_denominator_factors))))
 							}
 							else
 							{
-								Product::new(new_numerator_factors).calculate(rounded)
+								Product::new(new_numerator_factors).calculate(round)
 							}
 						}
 						else
 						{
-							if denominator_factors.len() > 0
+							if new_denominator_factors.len() > 0
 							{
 								Box::new(Fraction::new(Box::new(Number::new(1.0)), Box::new(Product::new(new_denominator_factors))))
 							}

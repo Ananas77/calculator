@@ -131,7 +131,7 @@ impl Term for Sum
 					let mut extend_by_factor = true;
 					for i in 0..denom_prime_factors.len()
 					{
-						if factor.print() == denom_prime_factors[i].print()
+						if factor.copy() == denom_prime_factors[i].copy()
 						{
 							extend_by_factor = false;
 							denom_prime_factors.remove(i);
