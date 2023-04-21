@@ -1,6 +1,8 @@
+use std::collections::HashMap;
 use std::vec;
 
 use crate::fraction::Fraction;
+use crate::power::Power;
 use crate::term::*;
 use crate::sum::*;
 
@@ -64,6 +66,38 @@ impl Term for Product
 		variables.sort_by(|a, b| a.print().to_lowercase().cmp(&b.print().to_lowercase()));
 		// add the variables to the new factors
 		new_factors.extend(variables);
+
+		let mut factors_as_hash: HashMap<Box<dyn Term>, Box<dyn Term>> = HashMap::new();
+		for factor in &new_factors
+		{
+			if factor.get_type() == TermType::Power
+			{
+				if let Some(exponent) = factors_as_hash.get_mut(&factor.get_parts()[0])
+				{
+					*exponent = Sum::new(vec![exponent.copy(), factor.get_parts()[1].copy()]).calculate(round)
+				}
+				else {
+					if let Some((key, val)) = &factors_as_hash.iter().map(|(k, v)| (k.copy(), v.copy())).find(|(_k,  v)| v.copy() == factor.get_parts()[1].copy() && v.copy() != Box::new(Number::new(1.0))) {
+						factors_as_hash.remove(&(key.copy()));
+						factors_as_hash.insert(Box::new(Product::new(vec![key.copy(), factor.get_parts()[0].copy()])), val.copy());
+                	}
+					else {
+						factors_as_hash.insert(factor.get_parts()[0].copy(), factor.get_parts()[1].copy());
+					}
+				}
+			}
+			else {
+				if let Some(exponent) = factors_as_hash.get_mut(&factor.copy())
+				{
+					*exponent = Sum::new(vec![exponent.copy(), Box::new(Number::new(1.0))]).calculate(round)
+				}
+				else {
+					factors_as_hash.insert(factor.get_parts()[0].copy(), Box::new(Number::new(1.0)));
+				}
+			}
+		}
+
+		new_factors = factors_as_hash.into_iter().map(|(key, value)| Box::new(Power::new(key, value)) as Box<dyn Term>).collect();
 
 		// format the new factors
 		match new_factors.len()

@@ -100,7 +100,7 @@ impl PartialEq for dyn Term
 			else {
 				false
 			},
-			_ => false
+			_ => panic!("Trying to compare unknown term")
 		}
 	}
 }
