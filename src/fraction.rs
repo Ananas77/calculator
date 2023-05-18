@@ -34,11 +34,11 @@ impl Term for Fraction
 		}
 		if calculated_numerator.get_type() == TermType::Sum
 		{
-			return Box::new(Sum::new(calculated_numerator.get_parts().iter().map(|summand| Box::new(Fraction::new(summand.copy(), calculated_denominator.copy())) as Box<dyn Term>).collect()))
+			return Box::new(Sum::new(calculated_numerator.get_parts().iter().map(|summand|  Fraction::new(summand.copy(), calculated_denominator.copy()).calculate(round)).collect()))
 		}
 		if calculated_denominator.get_type() == TermType::Sum
 		{
-			return Box::new(Sum::new(calculated_denominator.get_parts().iter().map(|summand| Box::new(Fraction::new(calculated_numerator.copy(), summand.copy())) as Box<dyn Term>).collect()))
+			return Box::new(Sum::new(calculated_denominator.get_parts().iter().map(|summand| Fraction::new(calculated_numerator.copy(), summand.copy()).calculate(round)).collect()))
 		}
 		// reduce the fraction
 		let prime_factors_numerator = prime_factors(calculated_numerator).get_parts();    // get numerator and denominator into products, reduce the fraction
