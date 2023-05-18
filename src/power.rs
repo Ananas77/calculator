@@ -34,7 +34,13 @@ impl Term for Power
                     {
                         Box::new(Power::new(calculated_base, calculated_exponent))
                     },
-                    _ => Box::new(Power::new(calculated_base, calculated_exponent))
+                    _ => if calculated_exponent.get_value() != 1.0
+                    {
+                        Box::new(Power::new(calculated_base, calculated_exponent))
+                    }
+                    else {
+                        calculated_base
+                    }
                 }
             },
             TermType::Fraction => {
@@ -49,16 +55,13 @@ impl Term for Power
         let mut result = String::new();
         match self.base.get_type()
         {
-            TermType::Number => result += &self.base.print(),
-            TermType::Variable => result += &self.base.print(),
+            TermType::Number | TermType::Variable => result += &self.base.print(),
             _ => result += &format!("({})", self.base.print()),
         }
-        result += " ^ ";
+        result += "^";
         match self.exponent.get_type()
         {
-            TermType::Power => result += &self.exponent.print(),
-            TermType::Number => result += &self.exponent.print(),
-            TermType::Variable => result += &self.exponent.print(),
+            TermType::Power | TermType::Number | TermType::Variable => result += &self.exponent.print(),
             _ => result += &format!("({})", self.exponent.print()),
         }
         result

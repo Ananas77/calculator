@@ -1,6 +1,6 @@
 use std::{vec};
 
-use crate::{term::*, math::prime_factors, product::Product};
+use crate::{term::*, math::prime_factors, product::Product, sum::Sum};
 
 pub struct Fraction
 {
@@ -31,6 +31,14 @@ impl Term for Fraction
 				calculated_denominator = calculated_denominator.get_parts()[0].copy()
 			}
 			_ => {}
+		}
+		if calculated_numerator.get_type() == TermType::Sum
+		{
+			return Box::new(Sum::new(calculated_numerator.get_parts().iter().map(|summand| Box::new(Fraction::new(summand.copy(), calculated_denominator.copy())) as Box<dyn Term>).collect()))
+		}
+		if calculated_denominator.get_type() == TermType::Sum
+		{
+			return Box::new(Sum::new(calculated_denominator.get_parts().iter().map(|summand| Box::new(Fraction::new(calculated_numerator.copy(), summand.copy())) as Box<dyn Term>).collect()))
 		}
 		// reduce the fraction
 		let prime_factors_numerator = prime_factors(calculated_numerator).get_parts();    // get numerator and denominator into products, reduce the fraction
@@ -88,15 +96,15 @@ impl Term for Fraction
 					let denominator_factors = prime_factors(new_denominator.copy()).get_parts();
 					let mut new_numerator_factors = vec![];
 					let mut new_denominator_factors = vec![];
-					let mut numerator_number = 1.0;
-					let mut denominator_number = 1.0;
+					let mut numerator_coefficient = 1.0;
+					let mut denominator_coefficient = 1.0;
 					// get all numbers from the numerator and denominator
 					for factor in &numerator_factors
 					{
 						match factor.get_type()
 						{
 							TermType::Number => {
-								numerator_number *= factor.get_value();
+								numerator_coefficient *= factor.get_value();
 							},
 							_ => {
 								new_numerator_factors.push(factor.copy());
@@ -108,38 +116,38 @@ impl Term for Fraction
 						match factor.get_type()
 						{
 							TermType::Number => {
-								denominator_number *= factor.get_value();
+								denominator_coefficient *= factor.get_value();
 							},
 							_ => {
 								new_denominator_factors.push(factor.copy());
 							}
 						}
 					};
-					let fraction_number = numerator_number / denominator_number;
+					let fraction_coefficient = numerator_coefficient / denominator_coefficient;
 					// format
-					if fraction_number != 1.0
+					if fraction_coefficient != 1.0
 					{
 						if new_numerator_factors.len() > 0
 						{
 							if new_denominator_factors.len() > 0
 							{
 								println!("{}",denominator_factors[0]);
-								Box::new(Product::new(vec![Box::new(Number::new(fraction_number)), Box::new(Fraction::new(Product::new(new_numerator_factors).calculate(round), Box::new(Product::new(new_denominator_factors))))]))
+								Box::new(Product::new(vec![Box::new(Number::new(fraction_coefficient)), Box::new(Fraction::new(Product::new(new_numerator_factors).calculate(round), Box::new(Product::new(new_denominator_factors))))]))
 							}
 							else
 							{
-								Box::new(Product::new(vec![Box::new(Number::new(fraction_number)), Product::new(new_numerator_factors).calculate(round)]))
+								Box::new(Product::new(vec![Box::new(Number::new(fraction_coefficient)), Product::new(new_numerator_factors).calculate(round)]))
 							}
 						}
 						else
 						{
 							if new_denominator_factors.len() > 0
 							{
-								Box::new(Product::new(vec![Box::new(Number::new(fraction_number)), Box::new(Fraction::new(Box::new(Number::new(1.0)), Box::new(Product::new(new_denominator_factors))))]))
+								Box::new(Product::new(vec![Box::new(Number::new(fraction_coefficient)), Box::new(Fraction::new(Box::new(Number::new(1.0)), Box::new(Product::new(new_denominator_factors))))]))
 							}
 							else
 							{
-								Box::new(Number::new(fraction_number))
+								Box::new(Number::new(fraction_coefficient))
 							}
 						}
 					}

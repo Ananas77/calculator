@@ -36,7 +36,6 @@ impl Term for Product
 			}
 		}
 
-		let mut i = 0;
 		// goes through every factor and tries to calculate anything that can be calculated
 		for term in &calculated_factors
 		{
@@ -48,7 +47,6 @@ impl Term for Product
 				TermType::Fraction => fractions.push(term.copy()),
 				_ => new_factors.push(term.copy())
 			};
-			i += 1;
 		};
 
 		// add the number result to the new factors
@@ -67,6 +65,7 @@ impl Term for Product
 		// add the variables to the new factors
 		new_factors.extend(variables);
 
+		// calculate powers
 		let mut factors_as_hash: HashMap<Box<dyn Term>, Box<dyn Term>> = HashMap::new();
 		for factor in &new_factors
 		{
@@ -77,13 +76,7 @@ impl Term for Product
 					*exponent = Sum::new(vec![exponent.copy(), factor.get_parts()[1].copy()]).calculate(round)
 				}
 				else {
-					if let Some((key, val)) = &factors_as_hash.iter().map(|(k, v)| (k.copy(), v.copy())).find(|(_k,  v)| v.copy() == factor.get_parts()[1].copy() && v.copy() != Box::new(Number::new(1.0))) {
-						factors_as_hash.remove(&(key.copy()));
-						factors_as_hash.insert(Box::new(Product::new(vec![key.copy(), factor.get_parts()[0].copy()])), val.copy());
-                	}
-					else {
-						factors_as_hash.insert(factor.get_parts()[0].copy(), factor.get_parts()[1].copy());
-					}
+					factors_as_hash.insert(factor.get_parts()[0].copy(), factor.get_parts()[1].copy());
 				}
 			}
 			else {
@@ -92,12 +85,25 @@ impl Term for Product
 					*exponent = Sum::new(vec![exponent.copy(), Box::new(Number::new(1.0))]).calculate(round)
 				}
 				else {
-					factors_as_hash.insert(factor.get_parts()[0].copy(), Box::new(Number::new(1.0)));
+					factors_as_hash.insert(factor.copy(), Box::new(Number::new(1.0)));
 				}
 			}
 		}
 
-		new_factors = factors_as_hash.into_iter().map(|(key, value)| Box::new(Power::new(key, value)) as Box<dyn Term>).collect();
+		new_factors = Vec::new();
+
+		for (key, value) in factors_as_hash.into_iter()
+		{
+			if value.get_type() == TermType::Number && value.get_value() == 1.0
+			{
+				new_factors.extend(vec![key; (value.get_value() as i64).try_into().unwrap()]);
+			}
+			else
+			{
+				new_factors.push(Box::new(Power::new(key, value)) as Box<dyn Term>)
+			}
+		}
+		new_factors.sort_by(|a, b| a.print().to_lowercase().cmp(&b.print().to_lowercase()));
 
 		// format the new factors
 		match new_factors.len()
@@ -106,45 +112,28 @@ impl Term for Product
 			0 => result = Box::new(Number::new(1.0)),
 			_ => result = 
 			{
-				let mut new_factors_copied = vec![];
-				for factor in &new_factors
-				{
-					new_factors_copied.push(factor.copy());
-				}
-				Box::new(Product::new(new_factors_copied))
+				Box::new(Product::new(new_factors.iter().map(|factor| factor.copy()).collect()))
 			},
 		}
 
 		// check for sums and multiply their summands with the remaining product
-		i = 0;
 		for term in &new_factors
 		{
 			if term.get_type() == TermType::Sum
 			{
 				let mut summands:Vec<Box<dyn Term>> = vec![];
+				let mut left_factors: Vec<Box<dyn Term>> = new_factors.iter().map(|f| f.copy()).collect();
+				left_factors.retain(|factor| factor != term);
 				for summand in term.get_parts()
 				{
-					let mut factors: Vec<Box<dyn Term>> = vec![];
-					let mut j = 0;
-					for factor in &new_factors
-					{
-						if i != j
-						{
-							factors.push(factor.copy());
-						}
-						else
-						{
-							factors.push(summand.copy());	
-						}
-						j += 1;
-					}
+					let mut factors  = vec![summand];
+					factors.extend(left_factors.iter().map(|f| f.copy()));
 					summands.push(Box::new(Product::new(factors)));
 				}
 		// calculate the resulting sum
 				result = Sum::new(summands).calculate(round);
-				break;
+				return result;
 			}
-			i+=1;
 		};
 
 		// calculate fractions
@@ -182,7 +171,7 @@ impl Term for Product
 			match factor.get_type()
 			{
 				// Sums and negative numbers require parenthesis
-				TermType::Sum => result = format!("{}({})", result, factor.print()),
+				TermType::Sum | TermType::Fraction | TermType::Power => result = format!("{}({})", result, factor.print()),
 				TermType::Number => {
 					if factor.get_value() < 0.0
 					{
