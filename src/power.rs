@@ -61,7 +61,11 @@ impl Term for Power
             TermType::Fraction => {
                 todo!() // root
             }
-            _ => Box::new(Power::new(calculated_base, calculated_exponent))
+            _ => match calculated_base.get_type()
+            {
+                TermType::Product => Box::new(Product::new(calculated_base.get_parts().iter().map(|factor| Power::new(factor.copy(), calculated_exponent.copy()).calculate(round)).collect())),
+                _ => Box::new(Power::new(calculated_base, calculated_exponent))
+            }
         };
         result
     }
