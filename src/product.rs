@@ -163,7 +163,7 @@ impl Term for Product
 		// add each factor to result string
 		for factor in &self.factors
 		{
-			if i != 0 && factor.get_type() != TermType::Variable && factor.get_type() != TermType::Sum
+			if i != 0 && factor.get_type() != TermType::Variable && factor.get_type() != TermType::Sum && !(i > 0 && self.factors[i-1].get_type() == TermType::Number && self.factors[i-1].get_value() == -1.0)
 			{
 				result = format!("{} * ", result);
 			}
@@ -173,9 +173,13 @@ impl Term for Product
 				// Sums and negative numbers require parenthesis
 				TermType::Sum | TermType::Fraction | TermType::Power => result = format!("{}({})", result, factor.print()),
 				TermType::Number => {
-					if factor.get_value() < 0.0
+					if factor.get_value() < 0.0 && factor.get_value() != -1.0
 					{
 						result = format!("{}({})", result, factor.print())
+					}
+					else if factor.get_value() == -1.0
+					{
+						result.insert(0, '-')
 					}
 					else 
 					{

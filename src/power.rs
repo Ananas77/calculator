@@ -1,6 +1,6 @@
 use std::{vec};
 
-use crate::{term::{Term, TermType, Number}, product::Product};
+use crate::{term::{Term, TermType, Number}, product::Product, math::prime_factors, fraction::Fraction};
 
 pub struct Power
 {
@@ -21,26 +21,41 @@ impl Term for Power
             }
             _ => {}
         }
+        if prime_factors(calculated_exponent.copy()).get_parts().contains(&(Box::new(Number::new(-1.0)) as Box<dyn Term>))
+        {
+            return Box::new(Fraction::new(Box::new(Number::new(1.0)), Power::new(calculated_base, Box::new(Product::new(vec![calculated_exponent, Box::new(Number::new(-1.0))]))).calculate(round)))
+        }
         
         result = match calculated_exponent.get_type() {
             TermType::Number => {
-                match calculated_base.get_type() {
-                    TermType::Number => Number::new(calculated_base.get_value().powf(calculated_exponent.get_value())).calculate(round),
-                    TermType::Sum | TermType::Product | TermType::Fraction => if calculated_exponent.get_value().floor() == calculated_exponent.get_value()
-                    {
-                        Product::new(vec![calculated_base; (calculated_exponent.get_value() as i64).try_into().unwrap()]).calculate(round)
+                if calculated_exponent.get_value() != 0.0
+                {
+                    match calculated_base.get_type() {
+                        TermType::Number => Number::new(calculated_base.get_value().powf(calculated_exponent.get_value())).calculate(round),
+                        TermType::Sum | TermType::Product | TermType::Fraction => if calculated_exponent.get_value().floor() == calculated_exponent.get_value()
+                        {
+                            Product::new(vec![calculated_base; (calculated_exponent.get_value() as i64).try_into().unwrap()]).calculate(round)
+                        }
+                        else
+                        {
+                            Box::new(Power::new(calculated_base, calculated_exponent))
+                        },
+                        _ => if calculated_exponent.get_value() != 1.0
+                        {
+                            Box::new(Power::new(calculated_base, calculated_exponent))
+                        }
+                        else {
+                            calculated_base
+                        }
                     }
-                    else
-                    {
-                        Box::new(Power::new(calculated_base, calculated_exponent))
-                    },
-                    _ => if calculated_exponent.get_value() != 1.0
-                    {
-                        Box::new(Power::new(calculated_base, calculated_exponent))
-                    }
-                    else {
-                        calculated_base
-                    }
+                }
+                else if calculated_base.get_type() == TermType::Number && calculated_base.get_value() == 0.0
+                {
+                    panic!("Can't calculate 0 to the power of 0!")
+                }
+                else
+                {
+                    Box::new(Number::new(1.0))
                 }
             },
             TermType::Fraction => {
