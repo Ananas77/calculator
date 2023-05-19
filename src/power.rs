@@ -1,6 +1,6 @@
 use std::{vec};
 
-use crate::{term::{Term, TermType, Number}, product::Product, math::prime_factors, fraction::Fraction};
+use crate::{term::{Term, TermType, Number}, product::Product, math::prime_factors, fraction::Fraction, root::Root};
 
 pub struct Power
 {
@@ -59,7 +59,7 @@ impl Term for Power
                 }
             },
             TermType::Fraction => {
-                todo!() // root
+                Box::new(Root::new(calculated_exponent.get_parts()[1].copy(), Box::new(Power::new(calculated_base, calculated_exponent.get_parts()[0].copy())))).calculate(round)
             }
             _ => match calculated_base.get_type()
             {

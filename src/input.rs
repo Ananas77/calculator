@@ -1,4 +1,4 @@
-use crate::{term::*, sum::Sum, product::Product, variable::Variable, fraction::Fraction, power::Power};
+use crate::{term::*, sum::Sum, product::Product, variable::Variable, fraction::Fraction, power::Power, root::Root};
 
 pub fn term_from_string(input: &str) -> Result<Box<dyn Term>, String>
 {
@@ -83,7 +83,12 @@ fn parse_factor(iter: &mut std::iter::Peekable<std::slice::Iter<&str>>) -> Resul
                 iter.next();
                 let rhs = parse_power_part(iter)?;
                 term = Box::new(Power::new(term, rhs));
-            }
+            },
+            &"rt" => {
+                iter.next();
+                let rhs = parse_power_part(iter)?;
+                term = Box::new(Root::new(term, rhs));
+            },
             _ => break,
         }
     }
@@ -102,6 +107,10 @@ fn parse_power_part(iter: &mut std::iter::Peekable<std::slice::Iter<&str>>) -> R
         &"-" => {
             let factor = parse_power_part(iter)?;
             Ok(Box::new(Product::new(vec![Box::new(Number::new(-1.0)), factor])).calculate(false))
+        }
+        &"sqrt" => {
+            let radicand = parse_power_part(iter)?;
+            Ok(Box::new(Root::new(Box::new(Number::new(2.0)), radicand)))
         }
         token => {
             if let Ok(val) = token.parse() {

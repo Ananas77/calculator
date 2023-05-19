@@ -1,6 +1,6 @@
-use crate::{term::*, product::Product, sum::Sum};
+use crate::{term::*, product::Product, sum::Sum, power::Power};
 
-pub fn prime_factors(term: Box<dyn Term>) -> Product // assumes, the term is solved already!!!
+pub fn prime_factors(term: Box<dyn Term>) -> Product // assumes, the term is calculated already!!!
 {
     let mut factors: Vec<Box<dyn Term>> = vec![];
     match term.get_type()
@@ -18,6 +18,9 @@ pub fn prime_factors(term: Box<dyn Term>) -> Product // assumes, the term is sol
         TermType::Number => {
             factors.extend(num_prime_factors(term.get_value() as i64));
         },
+        TermType::Power => {
+            factors.extend(prime_factors(term.get_parts()[0].copy()).get_parts().iter().map(|factor| Box::new(Power::new(factor.copy(), term.get_parts()[1].copy())) as Box<dyn Term>))
+        }
         _ => factors.push(term)
     }
     Product::new(factors)

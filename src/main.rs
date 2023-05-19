@@ -4,6 +4,7 @@ mod sum;
 mod product;
 mod fraction;
 mod power;
+mod root;
 mod input;
 mod math;
 

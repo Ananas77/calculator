@@ -1,7 +1,7 @@
 use core::{panic};
 use std::{fmt, vec, collections::HashMap, hash::{Hash, Hasher}};
 
-use crate::fraction::Fraction;
+use crate::{fraction::Fraction};
 
 #[derive(PartialEq, Clone, Copy)]
 pub enum TermType
@@ -13,6 +13,7 @@ pub enum TermType
 	Product,
 	Fraction,
 	Power,
+	Root,
 }
 
 pub trait Term
