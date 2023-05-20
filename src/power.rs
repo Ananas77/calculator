@@ -29,6 +29,10 @@ impl Term for Power
                 calculated_exponent = Product::new(vec![calculated_exponent.copy(), calculated_base.get_parts()[1].copy()]).calculate(round);
                 calculated_base = calculated_base.get_parts()[0].copy();
             }
+            TermType::Root => {
+                calculated_exponent = Product::new(vec![calculated_exponent.copy(), Box::new(Fraction::new(Box::new(Number::new(1.0)), calculated_base.get_parts()[0].copy()))]).calculate(round);
+                calculated_base = calculated_base.get_parts()[0].copy();
+            }
             _ => {}
         }
         // check if the exponent is negative => return a fraction
