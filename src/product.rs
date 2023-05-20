@@ -3,6 +3,7 @@ use std::vec;
 
 use crate::fraction::Fraction;
 use crate::power::Power;
+use crate::root::Root;
 use crate::term::*;
 use crate::sum::*;
 
@@ -83,6 +84,24 @@ impl Term for Product
 					factors_as_hash.insert(factor.get_parts()[0].copy(), factor.get_parts()[1].copy());
 				}
 			}
+			else if factor.get_type() == TermType::Root
+			{
+				let factor_base = factor.get_parts()[1].copy();
+				let factor_exponent = Box::new(Fraction::new(Box::new(Number::new(1.0)), factor.get_parts()[0].copy())) as Box<dyn Term>;
+				if let Some(exponent) = factors_as_hash.get_mut(&factor_exponent)
+				{
+					*exponent = Sum::new(vec![exponent.copy(), factor_base.copy()]).calculate(round)
+				}
+				else {
+					if let Some((key, _)) = factors_as_hash.iter().find(|(_k, &ref v)| v.copy() == factor_exponent.copy()) {
+						let new_key = Product::new(vec![key.copy(), factor_base]).calculate(round);
+						factors_as_hash.remove(&key.copy());
+						factors_as_hash.insert(new_key, factor_exponent.copy());
+					} else {
+						factors_as_hash.insert(factor_base, factor_exponent);
+					}
+				}
+			}
 			else {
 				if let Some(exponent) = factors_as_hash.get_mut(&factor.copy())
 				{
@@ -104,7 +123,21 @@ impl Term for Product
 			}
 			else
 			{
-				new_factors.push(Box::new(Power::new(key, value)) as Box<dyn Term>)
+				if value.get_type() != TermType::Fraction
+				{
+					new_factors.push(Box::new(Power::new(key, value)) as Box<dyn Term>)
+				}
+				else
+				{
+					if value.get_parts()[0].get_type() == TermType::Number && value.get_parts()[0].get_value() == 1.0
+					{
+						new_factors.push(Box::new(Root::new(value.get_parts()[1].copy(), key)).calculate(round))
+					}
+					else
+					{
+						new_factors.push(Box::new(Root::new(value.get_parts()[1].copy(), Box::new(Power::new(key, value.get_parts()[0].copy())).calculate(round))))
+					}
+				}
 			}
 		}
 		new_factors.sort_by(|a, b| a.print().to_lowercase().cmp(&b.print().to_lowercase()));

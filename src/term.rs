@@ -102,6 +102,13 @@ impl PartialEq for dyn Term
 			else {
 				false
 			},
+			TermType::Root => if other.get_type() == TermType::Root
+			{
+				(self.get_parts()[0] == other.get_parts()[0].copy()) & (self.get_parts()[1] == other.get_parts()[1].copy())
+			}
+			else {
+				false
+			},
 			_ => panic!("Trying to compare unknown term")
 		}
 	}
