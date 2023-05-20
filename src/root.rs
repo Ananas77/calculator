@@ -53,7 +53,7 @@ impl Term for Root
                 TermType::Fraction => {
                     if exponent.get_parts()[1].get_type() == TermType::Number
                     {
-                        match power.0.copy().get_type()
+                        match exponent.get_parts()[0].copy().get_type()
                         {
                             TermType::Number => {
                                 let new_exp = exponent.get_parts()[0].get_value() % exponent.get_parts()[1].get_value();
