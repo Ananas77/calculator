@@ -29,7 +29,8 @@ fn main() {
 		{
 			Ok(term) => {
 				let calculated_term = term.calculate(false);
-				println!("  {}\n= {}\n≈ {}", term, calculated_term, calculated_term.calculate(true))
+				println!("  {}\n= {}", term, calculated_term);
+				println!("≈ {}", calculated_term.calculate(true))
 			},
 			Err(e) => println!("INPUT ERROR: {}", e)
 		}

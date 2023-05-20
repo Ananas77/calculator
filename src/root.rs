@@ -84,7 +84,10 @@ impl Term for Root
             1 => {
                 new_factors[0].copy()
             },
-            _ => Product::new(new_factors).calculate(round)
+            _ => Box::new(Product::new(vec![
+                Product::new(new_factors.iter().filter(|factor| !(factor.get_type() == TermType::Root || (factor.get_type() == TermType::Power && factor.get_parts()[1].get_type() == TermType::Fraction))).map(|f| f.copy()).collect()).calculate(round),
+                Product::new(new_factors.iter().filter(|factor| factor.get_type() == TermType::Root || (factor.get_type() == TermType::Power && factor.get_parts()[1].get_type() == TermType::Fraction)).map(|f| f.copy()).collect()).calculate(round)                
+            ]))
         };
 
         result
