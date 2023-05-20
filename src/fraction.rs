@@ -160,7 +160,6 @@ impl Term for Fraction
 					{
 						if new_denominator_factors.len() > 0
 						{
-							println!("{}",denominator_factors[0]);
 							Box::new(Product::new(vec![Box::new(Number::new(fraction_coefficient)), Box::new(Fraction::new(Product::new(new_numerator_factors).calculate(round), Box::new(Product::new(new_denominator_factors))))]))
 						}
 						else

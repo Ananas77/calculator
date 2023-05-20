@@ -31,7 +31,7 @@ fn main() {
 				let calculated_term = term.calculate(false);
 				println!("  {}\n= {}\n≈ {}", term, calculated_term, calculated_term.calculate(true))
 			},
-			Err(e) => println!("Error reading the input: {}", e)
+			Err(e) => println!("INPUT ERROR: {}", e)
 		}
 	}
 }

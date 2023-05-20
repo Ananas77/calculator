@@ -1,6 +1,6 @@
 use std::{collections::HashMap, vec};
 
-use crate::{term::{Term, TermType, Number}, math::prime_factors, power::Power, sum::Sum, product::Product};
+use crate::{term::{Term, TermType, Number}, math::prime_factors, power::Power, sum::Sum, product::Product, fraction::Fraction};
 
 pub struct Root
 {
@@ -14,7 +14,6 @@ impl Term for Root
         let result:Box<dyn Term>;
         let calculated_index = self.index.calculate(round);
         let calculated_radicand = self.radicand.calculate(round);
-        let mut coefficient: Box<dyn Term> = Box::new(Number::new(1.0));
         if calculated_index.get_type() == TermType::Error
 		{
 			return calculated_index
@@ -26,6 +25,7 @@ impl Term for Root
 
         let prime_factors_radicand = prime_factors(calculated_radicand.copy()).get_parts();
         let mut factors_map: HashMap<Box<dyn Term>, Box<dyn Term>> = HashMap::new();
+        let mut new_factors: Vec<Box<dyn Term>> = Vec::new();
         for factor in &prime_factors_radicand
         {
             let factor_as_power = if factor.get_type() != TermType::Power
@@ -46,30 +46,42 @@ impl Term for Root
         }
         for power in factors_map.iter().map(|f| (f.0.copy(), f.1.copy())).collect::<Vec<(Box<dyn Term>, Box<dyn Term>)>>()
         {
-            if power.1.get_type() == TermType::Number && calculated_index.get_type() == TermType::Number
+            let exponent = Box::new(Fraction::new(power.1.copy(), calculated_index.copy())).calculate(round);
+            match exponent.get_type()
             {
-                let mut exponent_value = power.1.get_value();
-                while exponent_value >= calculated_index.get_value()
-                {
-                    coefficient = Product::new(vec![coefficient, power.0.copy()]).calculate(round);
-                    exponent_value -= calculated_index.get_value();
-                }
-                factors_map.insert(power.0.copy(), Box::new(Number::new(exponent_value)));
+                TermType::Sum => new_factors.extend(exponent.get_parts().iter().map(|summand| Box::new(Power::new(power.0.copy(), summand.copy())) as Box<dyn Term>)),
+                TermType::Fraction => {
+                    if exponent.get_parts()[1].get_type() == TermType::Number
+                    {
+                        match power.0.copy().get_type()
+                        {
+                            TermType::Number => {
+                                let new_exp = exponent.get_parts()[0].get_value() % exponent.get_parts()[1].get_value();
+                                if new_exp != exponent.get_parts()[0].get_value()
+                                {
+                                    new_factors.extend(vec![Box::new(Power::new(power.0.copy(), Box::new(Number::new(f64::floor(exponent.calculate(true).get_value()))))) as Box<dyn Term>,
+                                    Box::new(Power::new(power.0.copy(), Fraction::new(Box::new(Number::new(new_exp)), exponent.get_parts()[1].copy()).calculate(round)))]);
+                                }
+                                else {
+                                    new_factors.push(Box::new(Root::new(exponent.get_parts()[1].copy(), Power::new(power.0.copy(), exponent.get_parts()[0].copy()).calculate(round))))
+                                }
+                            },
+                            _ => new_factors.push(Box::new(Root::new(exponent.get_parts()[1].copy(), Power::new(power.0.copy(), exponent.get_parts()[0].copy()).calculate(round))))
+                        }
+                    }
+                },
+                _ => new_factors.push(Box::new(Power::new(power.0.copy(), exponent)).calculate(round))
             }
         }
 
-        let new_radicand = Product::new(factors_map.iter().map(|factor| Box::new(Power::new(factor.0.copy(), factor.1.copy())) as Box<dyn Term>).collect()).calculate(round);
-
-        if new_radicand == Box::new(Number::new(1.0)) {
-            return coefficient
-        }
-        if coefficient != Box::new(Number::new(1.0))
+        result = match new_factors.len()
         {
-            result = Box::new(Product::new(vec![coefficient, Box::new(Root::new(calculated_index, new_radicand))]))
-        }
-        else {
-            result = Box::new(Root::new(calculated_index, new_radicand))
-        }
+            0 => Box::new(Number::new(1.0)),
+            1 => {
+                new_factors[0].copy()
+            },
+            _ => Product::new(new_factors).calculate(round)
+        };
 
         result
     }
@@ -90,10 +102,10 @@ impl Term for Root
         let mut result = String::new();
         match self.index.get_type()
         {
-            TermType::Number | TermType::Variable => result += &self.index.print(),
+            TermType::Number => result += &self.index.print(),
             _ => result += &format!("({})", self.index.print()),
         }
-        result += "rt ";
+        result += "rt";
         result += &format!("({})", self.radicand.print());
         result
     }
