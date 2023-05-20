@@ -36,6 +36,8 @@ impl fmt::Display for dyn Term // for printing terms
 
 impl PartialEq for dyn Term
 {
+	// this checks wether two terms are equal (while not calculating!!! => 4 != 2*2)
+	// it checks, wether the two terms' types and their components are equal
 	fn eq(&self, other: &Self) -> bool
 	{
 		match self.get_type()

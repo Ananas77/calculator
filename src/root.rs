@@ -12,6 +12,7 @@ impl Term for Root
 {
     fn calculate(&self, round: bool) -> Box<dyn Term> {
         let result:Box<dyn Term>;
+        // calculate index and radicand, check for errors
         let calculated_index = self.index.calculate(round);
         let calculated_radicand = self.radicand.calculate(round);
         if calculated_index.get_type() == TermType::Error
@@ -23,6 +24,7 @@ impl Term for Root
 			return calculated_radicand
 		}
 
+        // this tries to extract as much as possible from the root, by storing the radicand as a product of powers (key:base, value:exponent) in a hashmap
         let prime_factors_radicand = prime_factors(calculated_radicand.copy()).get_parts();
         let mut factors_map: HashMap<Box<dyn Term>, Box<dyn Term>> = HashMap::new();
         let mut new_factors: Vec<Box<dyn Term>> = Vec::new();
@@ -53,6 +55,7 @@ impl Term for Root
                 TermType::Fraction => {
                     if exponent.get_parts()[1].get_type() == TermType::Number
                     {
+                        // if exponent and index are numbers, this extracts as many bases, as possible
                         match exponent.get_parts()[0].copy().get_type()
                         {
                             TermType::Number => {
@@ -74,6 +77,7 @@ impl Term for Root
             }
         }
 
+        // format
         result = match new_factors.len()
         {
             0 => Box::new(Number::new(1.0)),

@@ -52,17 +52,18 @@ impl Term for Fraction
 		}
 
 		// reduce the fraction
-		let prime_factors_numerator = prime_factors(calculated_numerator).get_parts();    // get numerator and denominator into products, reduce the fraction
+		// this code expresses the numerators and denominators prime factors as powers, stores the numerator and denominator in a hashmap where the key is the base and the exponent is the value (the denominator's exponents are negated)
+		let prime_factors_numerator = prime_factors(calculated_numerator).get_parts();
 		let prime_factors_denominator = prime_factors(calculated_denominator).get_parts();
-		let mut new_factors: HashMap<Box<dyn Term>, Box<dyn Term>> = HashMap::new(); // here the fraction will be expressed as a product of powers
-		// go through each prime factor in the numerator and check wether the fraction can be reduced by it
+		let mut new_factors: HashMap<Box<dyn Term>, Box<dyn Term>> = HashMap::new();
 		for factor in &prime_factors_numerator
 		{
-			if factor.get_type() == TermType::Number && factor.get_value() == -1.0
+			if factor.get_type() == TermType::Number && factor.get_value() == -1.0 // this will be stored as a coefficient later
 			{
 				fraction_is_neg *= -1.0;
 			}
 			else {
+				// expresses factor as power, stores it in the hashmap
 				let factor_as_power = if factor.get_type() != TermType::Power
 				{
 					Box::new(Power::new(factor.copy(), Box::new(Number::new(1.0))))
@@ -110,6 +111,7 @@ impl Term for Fraction
 		}
 
 		// calculate the resulting fraction
+		// the hashmap is converted to a vector, powers with positive exponents are stored in the numerator, those with negative exponents are stored in the denominator
 		let new_factors_as_vec: Vec<(Box<dyn Term>, Box<dyn Term>)> = new_factors.into_iter().collect();
 		let new_numerator = Product::new(new_factors_as_vec.iter()
 			.filter(|(_, exp)| !prime_factors(exp.copy()).get_parts().contains(&(Box::new(Number::new(-1.0)) as Box<dyn Term>)))
@@ -214,6 +216,7 @@ impl Term for Fraction
 			}
 		};
 
+		// store -1 as a fraction coefficient, if the fraction is negative, return
 		if fraction_is_neg == 1.0
 		{
 			result

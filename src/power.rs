@@ -12,6 +12,7 @@ impl Term for Power
 {
     fn calculate(&self, round: bool) -> Box<dyn Term> {
         let result: Box<dyn Term>;
+        // calculate base and exponent, check for errors
         let mut calculated_base = self.base.calculate(round);
         let mut calculated_exponent = self.exponent.calculate(round);
         if calculated_base.get_type() == TermType::Error
@@ -22,6 +23,7 @@ impl Term for Power
 		{
 			return calculated_exponent
 		}
+        // if the base is a power, the exponents can be multiplied
         match calculated_base.get_type() {
             TermType::Power => {
                 calculated_exponent = Product::new(vec![calculated_exponent.copy(), calculated_base.get_parts()[1].copy()]).calculate(round);
@@ -29,18 +31,20 @@ impl Term for Power
             }
             _ => {}
         }
+        // check if the exponent is negative => return a fraction
         if prime_factors(calculated_exponent.copy()).get_parts().contains(&(Box::new(Number::new(-1.0)) as Box<dyn Term>))
         {
             return Fraction::new(Box::new(Number::new(1.0)), Box::new(Power::new(calculated_base, Box::new(Product::new(vec![calculated_exponent, Box::new(Number::new(-1.0))]))))).calculate(round)
         }
         
+        // depending on the exponent's type, the calculations differ
         result = match calculated_exponent.get_type() {
             TermType::Number => {
                 if calculated_exponent.get_value() != 0.0
                 {
                     match calculated_base.get_type() {
-                        TermType::Number => Number::new(calculated_base.get_value().powf(calculated_exponent.get_value())).calculate(round),
-                        TermType::Sum | TermType::Product | TermType::Fraction => if calculated_exponent.get_value().floor() == calculated_exponent.get_value()
+                        TermType::Number => Number::new(calculated_base.get_value().powf(calculated_exponent.get_value())).calculate(round), // this can be calculated directly
+                        TermType::Sum | TermType::Product | TermType::Fraction => if calculated_exponent.get_value().floor() == calculated_exponent.get_value() // if the exponent is an integer, the base can be multiplied by itsself
                         {
                             Product::new(vec![calculated_base; (calculated_exponent.get_value() as i64).try_into().unwrap()]).calculate(round)
                         }
@@ -52,11 +56,12 @@ impl Term for Power
                         {
                             Box::new(Power::new(calculated_base, calculated_exponent))
                         }
-                        else {
+                        else { // this is not a power
                             calculated_base
                         }
                     }
                 }
+                // if the exponent is zero, the result is zero, unless the base is zero
                 else if calculated_base.get_type() == TermType::Number && calculated_base.get_value() == 0.0
                 {
                     Box::new(Error::new("Cant take 0 to the power of 0".to_string()))
@@ -66,6 +71,7 @@ impl Term for Power
                     Box::new(Number::new(1.0))
                 }
             },
+            // if the the exponent is a fraction, the term can be expressed and calculated as a root
             TermType::Fraction => {
                 Box::new(Root::new(calculated_exponent.get_parts()[1].copy(), Box::new(Power::new(calculated_base, calculated_exponent.get_parts()[0].copy())))).calculate(round)
             }

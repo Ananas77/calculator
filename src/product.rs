@@ -65,12 +65,11 @@ impl Term for Product
 			new_factors.push(Box::new(number_result));
 		};
 
-		// sort the variables
-		variables.sort_by(|a, b| a.print().to_lowercase().cmp(&b.print().to_lowercase()));
 		// add the variables to the new factors
 		new_factors.extend(variables);
 
-		// calculate powers
+		// calculate factors
+		// factors are expressed as powers in a hashmap (key:base, value:exponent), those with equal bases are multiplied by adding the exponents
 		let mut factors_as_hash: HashMap<Box<dyn Term>, Box<dyn Term>> = HashMap::new();
 		for factor in &new_factors
 		{
@@ -93,7 +92,7 @@ impl Term for Product
 					*exponent = Sum::new(vec![exponent.copy(), factor_base.copy()]).calculate(round)
 				}
 				else {
-					if let Some((key, _)) = factors_as_hash.iter().find(|(_k, &ref v)| v.copy() == factor_exponent.copy()) {
+					if let Some((key, _)) = factors_as_hash.iter().find(|(_k, &ref v)| v.copy() == factor_exponent.copy()) { // if the index is equal, the radicands are multiplied
 						let new_key = Product::new(vec![key.copy(), factor_base]).calculate(round);
 						factors_as_hash.remove(&key.copy());
 						factors_as_hash.insert(new_key, factor_exponent.copy());
@@ -115,6 +114,7 @@ impl Term for Product
 
 		new_factors = Vec::new();
 
+		// calculate the powers from the hashmap
 		for (key, value) in factors_as_hash.into_iter()
 		{
 			if value.get_type() == TermType::Number && value.get_value() == 1.0
