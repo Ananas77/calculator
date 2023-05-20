@@ -1,6 +1,6 @@
 use std::{vec};
 
-use crate::{term::{Term, TermType, Number}, product::Product, math::prime_factors, fraction::Fraction, root::Root};
+use crate::{term::{Term, TermType, Number, Error}, product::Product, math::prime_factors, fraction::Fraction, root::Root};
 
 pub struct Power
 {
@@ -14,6 +14,14 @@ impl Term for Power
         let result: Box<dyn Term>;
         let mut calculated_base = self.base.calculate(round);
         let mut calculated_exponent = self.exponent.calculate(round);
+        if calculated_base.get_type() == TermType::Error
+		{
+			return calculated_base
+		}
+		if calculated_exponent.get_type() == TermType::Error
+		{
+			return calculated_exponent
+		}
         match calculated_base.get_type() {
             TermType::Power => {
                 calculated_exponent = Product::new(vec![calculated_exponent.copy(), calculated_base.get_parts()[1].copy()]).calculate(round);
@@ -23,7 +31,7 @@ impl Term for Power
         }
         if prime_factors(calculated_exponent.copy()).get_parts().contains(&(Box::new(Number::new(-1.0)) as Box<dyn Term>))
         {
-            return Box::new(Fraction::new(Box::new(Number::new(1.0)), Power::new(calculated_base, Box::new(Product::new(vec![calculated_exponent, Box::new(Number::new(-1.0))]))).calculate(round)))
+            return Fraction::new(Box::new(Number::new(1.0)), Box::new(Power::new(calculated_base, Box::new(Product::new(vec![calculated_exponent, Box::new(Number::new(-1.0))]))))).calculate(round)
         }
         
         result = match calculated_exponent.get_type() {
@@ -51,7 +59,7 @@ impl Term for Power
                 }
                 else if calculated_base.get_type() == TermType::Number && calculated_base.get_value() == 0.0
                 {
-                    panic!("Can't calculate 0 to the power of 0!")
+                    Box::new(Error::new("Cant take 0 to the power of 0".to_string()))
                 }
                 else
                 {
@@ -64,6 +72,7 @@ impl Term for Power
             _ => match calculated_base.get_type()
             {
                 TermType::Product => Box::new(Product::new(calculated_base.get_parts().iter().map(|factor| Power::new(factor.copy(), calculated_exponent.copy()).calculate(round)).collect())),
+                TermType::Fraction => Box::new(Fraction::new(Power::new(calculated_base.get_parts()[0].copy(), calculated_exponent.copy()).calculate(round), Power::new(calculated_base.get_parts()[1].copy(), calculated_exponent).calculate(round))),
                 _ => Box::new(Power::new(calculated_base, calculated_exponent))
             }
         };

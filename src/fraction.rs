@@ -16,6 +16,18 @@ impl Term for Fraction
 		// calculate numerator and denominator
 		let mut calculated_numerator = self.numerator.calculate(round);
 		let mut calculated_denominator = self.denominator.calculate(round);
+		if calculated_numerator.get_type() == TermType::Error
+		{
+			return calculated_numerator
+		}
+		if calculated_denominator.get_type() == TermType::Error
+		{
+			return calculated_denominator
+		}
+		if calculated_denominator == Box::new(Number::new(0.0))
+		{
+			return Box::new(Error::new("Can't divide by zero!".to_string()))
+		}
 		match calculated_numerator.get_type()
 		{
 			TermType::Fraction => {

@@ -15,6 +15,14 @@ impl Term for Root
         let calculated_index = self.index.calculate(round);
         let calculated_radicand = self.radicand.calculate(round);
         let mut coefficient: Box<dyn Term> = Box::new(Number::new(1.0));
+        if calculated_index.get_type() == TermType::Error
+		{
+			return calculated_index
+		}
+		if calculated_radicand.get_type() == TermType::Error
+		{
+			return calculated_radicand
+		}
 
         let prime_factors_radicand = prime_factors(calculated_radicand.copy()).get_parts();
         let mut factors_map: HashMap<Box<dyn Term>, Box<dyn Term>> = HashMap::new();

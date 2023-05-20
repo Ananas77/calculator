@@ -22,6 +22,10 @@ impl Term for Sum
 		for term in &self.summands
 		{
 			let calculated_term = term.calculate(rounded);
+			if calculated_term.get_type() == TermType::Error
+			{
+				return calculated_term
+			}
 			if TermType::Sum == calculated_term.get_type()
 			{
 				calculated_summands.extend(calculated_term.get_parts());

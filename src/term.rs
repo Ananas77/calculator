@@ -7,6 +7,7 @@ use crate::{fraction::Fraction};
 pub enum TermType
 {
 	None,
+	Error,
 	Number,
 	Variable,
 	Sum,
@@ -169,5 +170,38 @@ impl Number
 		{
 			value:value,
 		}
+	}
+}
+
+pub struct Error
+{
+	msg: String
+}
+
+impl Term for Error
+{
+	fn print(&self) -> String
+	{
+		"MATH ERROR: ".to_string() + &self.msg.clone()
+	}
+
+	fn copy(&self) -> Box<dyn Term> {
+		Box::new(Error::new(self.msg.clone()))
+	}
+
+	fn get_type(&self) -> TermType {
+		TermType::Error
+	}
+
+	fn calculate(&self, _: bool) -> Box<dyn Term> {
+		self.copy()
+	}
+}
+
+impl Error
+{
+	pub fn new(msg: String) -> Error
+	{ 
+		Error{msg}
 	}
 }

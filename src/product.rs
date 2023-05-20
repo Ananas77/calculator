@@ -26,6 +26,10 @@ impl Term for Product
 		for term in &self.factors
 		{
 			let calculated_term = term.calculate(round);
+			if calculated_term.get_type() == TermType::Error
+			{
+				return calculated_term
+			}
 			if TermType::Product == calculated_term.get_type()
 			{
 				calculated_factors.extend(calculated_term.get_parts());
