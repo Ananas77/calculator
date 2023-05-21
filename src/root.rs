@@ -96,7 +96,7 @@ impl Term for Root
                     {
                         if let Some(radicand) = root_factors_map.get_mut(&factor.get_parts()[0])
                         {
-                            *radicand = Product::new(vec![radicand.copy(), factor.get_parts()[0].copy()]).calculate(round);
+                            *radicand = Product::new(vec![radicand.copy(), factor.get_parts()[1].copy()]).calculate(round);
                         }
                         else {
                             root_factors_map.insert(factor.get_parts()[0].copy(), factor.get_parts()[1].copy());

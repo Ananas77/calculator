@@ -68,10 +68,6 @@ impl Term for Fraction
 				{
 					Box::new(Power::new(factor.copy(), Box::new(Number::new(1.0))))
 				}
-				else if factor.get_type() == TermType::Root
-				{
-					Box::new(Power::new(factor.get_parts()[1].copy(), Box::new(Fraction::new(Box::new(Number::new(1.0)), factor.get_parts()[0].copy()))))
-				}
 				else 
 				{
 					factor.copy()
