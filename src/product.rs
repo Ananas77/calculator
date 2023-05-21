@@ -87,18 +87,12 @@ impl Term for Product
 			{
 				let factor_base = factor.get_parts()[1].copy();
 				let factor_exponent = Box::new(Fraction::new(Box::new(Number::new(1.0)), factor.get_parts()[0].copy())) as Box<dyn Term>;
-				if let Some(exponent) = factors_as_hash.get_mut(&factor_exponent)
-				{
-					*exponent = Sum::new(vec![exponent.copy(), factor_base.copy()]).calculate(round)
-				}
-				else {
-					if let Some((key, _)) = factors_as_hash.iter().find(|(_k, &ref v)| v.copy() == factor_exponent.copy()) { // if the index is equal, the radicands are multiplied
-						let new_key = Product::new(vec![key.copy(), factor_base]).calculate(round);
-						factors_as_hash.remove(&key.copy());
-						factors_as_hash.insert(new_key, factor_exponent.copy());
-					} else {
-						factors_as_hash.insert(factor_base, factor_exponent);
-					}
+				if let Some((key, _)) = factors_as_hash.iter().find(|(_k, &ref v)| v.copy() == factor_exponent.copy()) { // if the index is equal, the radicands are multiplied
+					let new_key = Product::new(vec![key.copy(), factor_base]).calculate(round);
+					factors_as_hash.remove(&key.copy());
+					factors_as_hash.insert(new_key, factor_exponent.copy());
+				} else {
+					factors_as_hash.insert(factor_base, factor_exponent);
 				}
 			}
 			else {
@@ -135,7 +129,7 @@ impl Term for Product
 					}
 					else
 					{
-						new_factors.push(Box::new(Root::new(value.get_parts()[1].copy(), Box::new(Power::new(key, value.get_parts()[0].copy())).calculate(round))))
+						new_factors.push(Box::new(Root::new(value.get_parts()[1].copy(), Box::new(Power::new(key, value.get_parts()[0].copy())))).calculate(round))
 					}
 				}
 			}

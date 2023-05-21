@@ -84,10 +84,53 @@ impl Term for Root
             1 => {
                 new_factors[0].copy()
             },
-            _ => Box::new(Product::new(vec![
-                Product::new(new_factors.iter().filter(|factor| !(factor.get_type() == TermType::Root || (factor.get_type() == TermType::Power && factor.get_parts()[1].get_type() == TermType::Fraction))).map(|f| f.copy()).collect()).calculate(round),
-                Product::new(new_factors.iter().filter(|factor| factor.get_type() == TermType::Root || (factor.get_type() == TermType::Power && factor.get_parts()[1].get_type() == TermType::Fraction)).map(|f| f.copy()).collect()).calculate(round)                
-            ]))
+            // roots and coefficients are calculated seperately
+            _ => 
+            {
+                let factors_coefficient: Vec<Box<dyn Term>> = new_factors.iter().filter(|factor| !(factor.get_type() == TermType::Root || (factor.get_type() == TermType::Power && factor.get_parts()[1].get_type() == TermType::Fraction))).map(|f| f.copy()).collect();
+                let factors_roots: Vec<Box<dyn Term>> = new_factors.iter().filter(|factor| factor.get_type() == TermType::Root || (factor.get_type() == TermType::Power && factor.get_parts()[1].get_type() == TermType::Fraction)).map(|f| f.copy()).collect();
+                let mut root_factors_map: HashMap<Box<dyn Term>, Box<dyn Term>> = HashMap::new();  // Hashmap<index, radicand>, for every index, radicand is calculated
+                for factor in factors_roots
+                {
+                    if factor.get_type() == TermType::Root
+                    {
+                        if let Some(radicand) = root_factors_map.get_mut(&factor.get_parts()[0])
+                        {
+                            *radicand = Product::new(vec![radicand.copy(), factor.get_parts()[0].copy()]).calculate(round);
+                        }
+                        else {
+                            root_factors_map.insert(factor.get_parts()[0].copy(), factor.get_parts()[1].copy());
+                        }
+                    }
+                    else if factor.get_type() == TermType::Power && factor.get_parts()[1].get_type() == TermType::Fraction
+                    {
+                        let index = factor.get_parts()[1].get_parts()[1].copy();
+                        let radicand = Power::new(factor.get_parts()[0].copy(), factor.get_parts()[1].get_parts()[0].copy()).calculate(round);
+                        if let Some(old_radicand) = root_factors_map.get_mut(&index)
+                        {
+                            *old_radicand = Product::new(vec![old_radicand.copy(), radicand]).calculate(round);
+                        }
+                        else {
+                            root_factors_map.insert(index.copy(), radicand.copy());
+                        }
+                    }
+                    else {
+                        panic!("An unexpected error occured.")
+                    }
+                }
+                let mut factors: Vec<Box<dyn Term>> = Vec::new();
+                match factors_coefficient.len()
+                {
+                    0 => (),
+                    1 => factors.push(factors_coefficient[0].calculate(round)),
+                    _ => factors.push(Product::new(factors_coefficient).calculate(round))
+                }
+                for factor in root_factors_map
+                {
+                    factors.push(Box::new(Root::new(factor.0.copy(), factor.1.copy())));
+                }
+                Box::new(Product::new(factors))
+            }
         };
 
         result
