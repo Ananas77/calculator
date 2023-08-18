@@ -24,7 +24,7 @@ impl Term for Fraction
 		{
 			return calculated_denominator
 		}
-		if calculated_denominator == Box::new(Number::new(0.0))
+		if &calculated_denominator == &(Box::new(Number::new(0.0)) as Box<dyn Term>)
 		{
 			return Box::new(Error::new("Can't divide by zero!".to_string()))
 		}
